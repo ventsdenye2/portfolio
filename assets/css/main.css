@@ -1140,9 +1140,12 @@ input, select, textarea {
 			-ms-transition-delay: 0.75s;
 			transition-delay: 0.75s;
 			background-image: linear-gradient(to top, rgba(19, 21, 25, 0.5), rgba(19, 21, 25, 0.5)), url("../../images/overlay.png");
-			background-size: auto, 256px 256px;
-			background-position: center, center;
-			background-repeat: no-repeat, repeat;
+			background-size: auto,
+ 256px 256px;
+			background-position: center,
+ center;
+			background-repeat: no-repeat,
+ repeat;
 			z-index: 2;
 		}
 
@@ -1155,11 +1158,53 @@ input, select, textarea {
 			-webkit-transition: -webkit-transform 0.325s ease-in-out, -webkit-filter 0.325s ease-in-out;
 			-ms-transition: -ms-transform 0.325s ease-in-out, -ms-filter 0.325s ease-in-out;
 			transition: transform 0.325s ease-in-out, filter 0.325s ease-in-out;
-			background-image: url("../../images/bg.jpg");
-			background-position: center;
-			background-size: cover;
-			background-repeat: no-repeat;
+			background: linear-gradient(135deg, #1e1e1e 0%, #252526 100%);
+			position: relative;
+			overflow: hidden;
 			z-index: 1;
+		}
+
+		#bg:after::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background:
+				radial-gradient(circle at 20% 80%, rgba(0, 120, 215, 0.1) 0%, transparent 50%),
+				radial-gradient(circle at 80% 20%, rgba(255, 140, 0, 0.1) 0%, transparent 50%),
+				radial-gradient(circle at 40% 40%, rgba(0, 255, 0, 0.1) 0%, transparent 50%),
+				linear-gradient(90deg,
+					#1e1e1e 0%,
+					#252526 25%,
+					#2d2d30 50%,
+					#252526 75%,
+					#1e1e1e 100%
+				);
+			background-size: 200% 200%, 150% 150%, 100% 100%, 400% 100%;
+			animation: codeScroll 20s linear infinite, codeGlow 4s ease-in-out infinite alternate;
+			opacity: 0.8;
+		}
+
+		#bg:after::after {
+			content: 'using System;\nusing UnityEngine;\n\npublic class PlayerController : MonoBehaviour\n{\n    private void Update()\n    {\n        // Movement code\n        float moveX = Input.GetAxis("Horizontal");\n        float moveY = Input.GetAxis("Vertical");\n        \n        transform.Translate(new Vector3(moveX, 0, moveY) * Time.deltaTime);\n    }\n}\n\npublic class GameManager : MonoBehaviour\n{\n    public static GameManager Instance;\n    \n    private void Awake()\n    {\n        if (Instance == null)\n        {\n            Instance = this;\n        }\n    }\n}\n\npublic class CameraController : MonoBehaviour\n{\n    [SerializeField] private Transform target;\n    \n    private void LateUpdate()\n    {\n        transform.position = target.position;\n    }\n}\n\n// Testing scrolling effect\npublic class TestClass : MonoBehaviour\n{\n    private void Start()\n    {\n        Debug.Log("Code is scrolling!");\n    }\n}';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+			font-size: 14px;
+			line-height: 1.4;
+			color: #d4d4d4;
+			white-space: pre;
+			overflow: hidden;
+			padding: 20px;
+			background: transparent;
+			animation: codeScrollVertical 10s linear infinite;
+			opacity: 0.9;
+			text-shadow: 0 0 5px rgba(212, 212, 212, 0.3);
 		}
 
 		body.is-article-visible #bg:after {
@@ -1543,7 +1588,7 @@ input, select, textarea {
 			position: relative;
 			width: 40rem;
 			max-width: 100%;
-			background-color: rgba(27, 31, 34, 0.85);
+			background-color: rgba(27, 31, 34, 0.18);
 			border-radius: 4px;
 			opacity: 0;
 		}
@@ -1656,3 +1701,31 @@ input, select, textarea {
 		body.is-preload #footer {
 			opacity: 0;
 		}
+
+/* Code animation keyframes */
+@keyframes codeScroll {
+	0% {
+		background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%;
+	}
+	100% {
+		background-position: 100% 100%, 100% 100%, 100% 100%, 400% 0%;
+	}
+}
+
+@keyframes codeGlow {
+	0% {
+		opacity: 0.6;
+	}
+	100% {
+		opacity: 1.0;
+	}
+}
+
+@keyframes codeScrollVertical {
+	0% {
+		transform: translateY(0);
+	}
+	100% {
+		transform: translateY(-100%);
+	}
+}
