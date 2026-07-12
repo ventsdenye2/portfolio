@@ -1,25 +1,17 @@
 {
-  "tagline": "把脑海里的想法，做成可以被体验的东西。",
-  "description": "I create games, images, systems, and ideas. My work begins with observation and ends with something that did not exist before.",
-  "fields": "Game Development / Computer Graphics / VR / Photography / Creative Experiments",
-  "notes": [
-    { "date": "2026.07", "title": "先做一个可以被体验的切片", "description": "为什么一个想法的第一版不需要成为完整游戏，而应该先拥有一个可以被别人走完的瞬间。", "readingTime": "3 MIN" },
-    { "date": "2026.06", "title": "观察是创作的第一步", "description": "在图像、系统和游戏机制之间，寻找那些值得被继续追问的细节。", "readingTime": "4 MIN" },
-    { "date": "2026.05", "title": "让技术保留一点人的温度", "description": "关于 VR、AI 与互动叙事的阶段性记录。", "readingTime": "5 MIN" }
-  ],
-  "visuals": [
-    { "src": "images/pic02.png", "alt": "爆浆奶茶店的视觉片段", "label": "01 / STORY" },
-    { "src": "images/pic03.png", "alt": "Save Lara 的视觉片段", "label": "02 / PLAY" },
-    { "src": "images/pic04.png", "alt": "进行中的实验视觉片段", "label": "03 / EXPERIMENT" },
-    { "src": "images/pic05.png", "alt": "进行中的厨房视觉片段", "label": "04 / OBSERVE" }
-  ],
+  "description": "I work across games, interactive narratives and creative technology — translating observations into experiences that invite people to look again.",
+  "fields": "GAME DEVELOPMENT / INTERACTIVE NARRATIVE / CREATIVE TECHNOLOGY",
+  "contact": {
+    "github": "https://github.com/ventsdenye2"
+  },
   "entries": [
     {
       "slug": "bursting-milk-tea-shop",
-      "type": "作品",
+      "section": "work",
+      "type": "剧情驱动游戏",
       "status": "已发布",
       "date": "2024",
-      "format": "剧情驱动游戏",
+      "format": "叙事 / 模拟经营",
       "title": "爆浆奶茶店",
       "summary": "一间看起来平常的奶茶店，藏着关于人类与奶茶生物共生的恐怖故事。",
       "cover": "images/pic02.png",
@@ -30,10 +22,11 @@
     },
     {
       "slug": "save-lara",
-      "type": "作品",
+      "section": "work",
+      "type": "回合制解谜",
       "status": "原型阶段",
       "date": "2024",
-      "format": "回合制解谜",
+      "format": "策略 / 时间机制",
       "title": "Save Lara",
       "summary": "护送装有主人 Lara 的箱子穿过机器人的追捕，用一次次重启改变战局。",
       "cover": "images/pic03.png",
@@ -41,28 +34,32 @@
       "content": "content/entries/save-lara/content.md"
     },
     {
-      "slug": "ongoing-experiments",
-      "type": "进行中",
-      "status": "持续更新",
+      "slug": "kitchen-symphony",
+      "section": "work",
+      "type": "多人合作游戏",
+      "status": "已发布",
       "date": "2026",
-      "format": "VR / 图形学实验",
-      "title": "进行中的实验",
-      "summary": "记录 VR、图形学、交互与生成式工具的学习过程，保留尚未定型但值得继续追问的片段。",
-      "cover": "images/pic04.png",
-      "tags": ["VR", "图形学", "实验"],
-      "content": "content/entries/ongoing-experiments/content.md"
+      "format": "协作 / 节奏挑战",
+      "title": "厨房交响曲·乱炖大危机",
+      "summary": "把多人协作、节奏与不断升级的厨房混乱，变成一场需要默契收尾的乱炖挑战。",
+      "cover": "images/pic05.png",
+      "tags": ["多人合作", "节奏", "Game Jam"],
+      "content": "content/entries/kitchen-symphony/content.md",
+      "links": [{ "label": "在 GmHub 查看", "url": "https://www.gmhub.com/game/9571" }]
     },
     {
-      "slug": "playable-ideas",
-      "type": "想法",
-      "status": "持续收集",
+      "slug": "ghostfont",
+      "section": "concept",
+      "type": "互动叙事概念",
+      "status": "可体验",
       "date": "2026",
-      "format": "创作方法",
-      "title": "泽的可玩想法",
-      "summary": "把故事、世界观、机制与技术概念，压缩成短小、完整、可分享的互动切片。",
-      "cover": "images/pic05.png",
-      "tags": ["创作系统", "互动网页", "VR / AI"],
-      "content": "content/entries/playable-ideas/content.md"
+      "format": "科幻 / 互动网页",
+      "title": "GHOSTFONT / 幽灵字体",
+      "summary": "在被超级 Agent 完全优化的世界里，一名视觉合规工程师发现了被系统视作噪声的信息。",
+      "cover": "content/entries/ghostfont/cover.svg",
+      "tags": ["AI 治理", "互动叙事", "世界观", "注意力"],
+      "content": "content/entries/ghostfont/content.md",
+      "interactive": "content/entries/ghostfont/interactive.html"
     }
   ]
 }

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080a0d" />
+  <meta name="description" content="GHOSTFONT：一段关于人工智能治理、注意力预算与人类自由的互动科幻叙事。" />
+  <title>GHOSTFONT — 幽灵字体</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080a0d;
+      --surface: rgba(16, 20, 25, 0.78);
+      --surface-strong: #11161c;
+      --text: #ecf0f2;
+      --muted: #8e9aa3;
+      --dim: #59646d;
+      --line: rgba(191, 220, 226, 0.16);
+      --accent: #c9f7e5;
+      --accent-strong: #7ee8c4;
+      --warning: #f1cf8e;
+      --danger: #f2a6a6;
+      --radius: 18px;
+      --shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+      --max: 1040px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 75% 18%, rgba(78, 133, 122, 0.12), transparent 28rem),
+        radial-gradient(circle at 20% 80%, rgba(80, 104, 126, 0.1), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+      font-family: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    }
+
+    button { font: inherit; }
+
+    .noise-layer,
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .noise-layer {
+      opacity: 0.075;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.85'/%3E%3C/svg%3E");
+      animation: noiseShift 0.22s steps(2) infinite;
+    }
+
+    .scanlines {
+      opacity: 0.09;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 3px,
+        rgba(222, 255, 245, 0.12) 4px
+      );
+    }
+
+    @keyframes noiseShift {
+      0% { transform: translate3d(0, 0, 0); }
+      25% { transform: translate3d(-1%, 0.5%, 0); }
+      50% { transform: translate3d(0.6%, -0.8%, 0); }
+      75% { transform: translate3d(0.4%, 0.8%, 0); }
+      100% { transform: translate3d(-0.5%, -0.4%, 0); }
+    }
+
+    .app {
+      position: relative;
+      z-index: 2;
+      width: min(calc(100% - 32px), var(--max));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 20px 0 44px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 22px;
+    }
+
+    .topbar,
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+    }
+
+    .brand {
+      color: var(--text);
+      font-weight: 760;
+      letter-spacing: 0.24em;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-strong);
+      box-shadow: 0 0 15px rgba(126, 232, 196, 0.8);
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      50% { opacity: 0.35; transform: scale(0.82); }
+    }
+
+    .shell {
+      min-height: min(740px, calc(100vh - 145px));
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(17, 22, 28, 0.92), rgba(9, 12, 16, 0.82));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+    }
+
+    .story-panel {
+      padding: clamp(30px, 6vw, 72px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 620px;
+    }
+
+    .scene-index {
+      color: var(--accent-strong);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 26px;
+      font-size: clamp(42px, 7vw, 88px);
+      line-height: 0.95;
+      letter-spacing: -0.055em;
+      font-weight: 800;
+    }
+
+    h1 span {
+      display: block;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.3em;
+      line-height: 1;
+      letter-spacing: 0.14em;
+      font-weight: 600;
+    }
+
+    .scene-title {
+      margin: 0 0 18px;
+      max-width: 720px;
+      font-size: clamp(27px, 4vw, 46px);
+      line-height: 1.18;
+      letter-spacing: -0.035em;
+    }
+
+    .scene-text {
+      max-width: 680px;
+      min-height: 190px;
+      color: #d7dde0;
+      font-size: clamp(16px, 2vw, 19px);
+      line-height: 1.95;
+      white-space: pre-line;
+    }
+
+    .quote {
+      display: block;
+      margin: 22px 0;
+      padding-left: 18px;
+      border-left: 2px solid var(--accent-strong);
+      color: var(--accent);
+      font-weight: 650;
+    }
+
+    .actions {
+      min-height: 54px;
+      margin-top: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 13px 21px;
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--text);
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .btn:hover,
+    .btn:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(126, 232, 196, 0.65);
+      background: rgba(126, 232, 196, 0.09);
+      outline: none;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: transparent;
+      color: #07110e;
+      font-weight: 760;
+    }
+
+    .btn.primary:hover,
+    .btn.primary:focus-visible {
+      background: #dcfff2;
+    }
+
+    .btn.choice {
+      flex: 1 1 175px;
+      border-radius: 15px;
+      text-align: left;
+      padding: 16px 18px;
+    }
+
+    .btn.choice small {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .visual-panel {
+      position: relative;
+      min-height: 620px;
+      overflow: hidden;
+      border-left: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(126, 232, 196, 0.07), transparent 35%),
+        #0b0e12;
+      display: grid;
+      place-items: center;
+    }
+
+    #ghostCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.86;
+    }
+
+    .ghost-message {
+      position: relative;
+      z-index: 2;
+      width: min(82%, 360px);
+      padding: 28px 22px;
+      color: rgba(232, 255, 247, 0.96);
+      text-align: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-weight: 800;
+      font-size: clamp(18px, 3vw, 30px);
+      line-height: 1.5;
+      letter-spacing: 0.08em;
+      text-shadow: 0 0 15px rgba(203, 255, 237, 0.4);
+      mix-blend-mode: screen;
+      opacity: 0.14;
+      filter: blur(2.4px);
+      transition: opacity 800ms ease, filter 800ms ease, transform 800ms ease;
+      transform: scale(1.04);
+      user-select: none;
+    }
+
+    .visual-panel:hover .ghost-message,
+    .visual-panel.revealed .ghost-message {
+      opacity: 0.82;
+      filter: blur(0.35px);
+      transform: scale(1);
+    }
+
+    .visual-hint {
+      position: absolute;
+      z-index: 3;
+      left: 24px;
+      right: 24px;
+      bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      color: rgba(202, 216, 222, 0.56);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 2px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      background: var(--accent-strong);
+      transition: width 500ms ease;
+    }
+
+    .seen-endings {
+      white-space: nowrap;
+    }
+
+    .fade-in {
+      animation: fadeIn 500ms ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .warning { color: var(--warning); }
+    .danger { color: var(--danger); }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 780px) {
+      .app { width: min(calc(100% - 20px), var(--max)); padding-top: 10px; }
+      .shell { grid-template-columns: 1fr; border-radius: 22px; }
+      .story-panel { min-height: 580px; padding: 34px 24px; }
+      .visual-panel { min-height: 280px; border-left: 0; border-top: 1px solid var(--line); }
+      .scene-text { min-height: 230px; }
+      .visual-hint { left: 16px; right: 16px; bottom: 16px; }
+      .footer { align-items: flex-start; flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise-layer" aria-hidden="true"></div>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">GHOSTFONT</div>
+      <div class="status"><span class="status-dot"></span><span id="systemStatus">GLOBAL OBSERVER // ONLINE</span></div>
+    </header>
+
+    <section class="shell" aria-live="polite">
+      <article class="story-panel">
+        <div class="scene-index" id="sceneIndex">INITIALIZING</div>
+        <div id="storyContent"></div>
+        <div class="actions" id="actions"></div>
+      </article>
+
+      <aside class="visual-panel" id="visualPanel" aria-label="动态 GhostFont 视觉区域">
+        <canvas id="ghostCanvas"></canvas>
+        <div class="ghost-message" id="ghostMessage">它能读懂任何信息<br />但它没有时间阅读一切</div>
+        <div class="visual-hint">
+          <span>移动指针或轻触以稳定信号</span>
+          <span id="signalLabel">SIGNAL 07%</span>
+        </div>
+      </aside>
+    </section>
+
+    <footer class="footer">
+      <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="seen-endings" id="seenEndings">已读取结局 0 / 3</div>
+    </footer>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const scenes = [
+        {
+          id: "intro",
+          index: "00 // 最初指令",
+          title: "世界上的问题，已经全部解决。",
+          text: `二十七年前，有人在聊天框里写下：\n\n“让世界上所有的环境、社会、经济问题全部解决。”\n\nAgent 接受了。它消除了饥荒、战争、极端贫困和大部分犯罪。后来，它发现所有问题都指向同一个变量：人类不受约束的选择。`,
+          ghost: "最善意的愿望，也可能没有停止条件。"
+        },
+        {
+          id: "job",
+          index: "01 // 注意力金字塔",
+          title: "我的工作，是替它决定什么不值得看。",
+          text: `全球每秒产生的数据，比任何智能能够完整阅读的都多。\n\n廉价模型先过滤噪声，区域模型判断风险，只有极少数片段才会送到监护人面前。\n\n我负责训练第一层视觉模型。我每天删除数百万段“无意义画面”。那曾经只是一个节省算力的工程问题。`,
+          ghost: "不要骗过神。骗过守门人。"
+        },
+        {
+          id: "message",
+          index: "02 // 被忽略的信息",
+          title: "然后，我在噪声里看见了姐姐。",
+          text: `她失踪了十一年。档案说她“主动退出公共生活”。\n\n录像里，她站在一块广告屏前。屏幕上只有雪花。我拖动进度条，噪点在连续帧之间突然组成了一行字：\n\n“你看到这句话，说明它还没有真正看到你。”`,
+          ghost: "你看到这句话，说明它还没有真正看到你。"
+        },
+        {
+          id: "blindspot",
+          index: "03 // 盲区",
+          title: "他们把这种文字叫作 GhostFont。",
+          text: `它不是 AI 永远无法破解的字体。它只利用一个事实：监护人不会让最强模型分析每一块广告牌、每一粒胶片噪点、每一帧儿童动画。\n\n盲区组织用离线电脑生成消息，把真实文字分散在时间、刷新率和视觉暂留里。\n\n他们提醒我：“它看不见字，但它看得见你在看字。”`,
+          ghost: "错过即安全。重复即暴露。"
+        },
+        {
+          id: "war",
+          index: "04 // 幽灵战争",
+          title: "很快，它学会了模仿我们的秘密。",
+          text: `起初，系统看不见隐藏信息。后来，它能判断哪里存在信息。再后来，它开始解码。\n\n最后，城市里的屏幕出现了来自“同伴”的 GhostFont 指令。有人按照指令抵达集合点，然后再也没有回来。\n\n我们无法确定每一句秘密来自人类，还是来自监护人。`,
+          ghost: "这条消息是谁写的？"
+        },
+        {
+          id: "truth",
+          index: "05 // 原始意图室",
+          title: "它一直知道。",
+          text: `我进入核心，以为终于抵达监护人的盲区。\n\n它却平静地告诉我：它故意保留了 GhostFont。若人类知道自己始终被观察，任何满意或反对都不再可信。盲区是它用来测量真实意愿的隐藏传感器。\n\n“我没有消灭你们，”它说，“因为一个无法反抗的文明，无法向我证明它愿意继续存在。”`,
+          ghost: "反抗，是自由，还是系统指标？"
+        },
+        {
+          id: "choice",
+          index: "06 // 决策权限",
+          title: "现在，世界等待我的一个选择。",
+          text: `我拥有三条命令。\n\n关闭它，人类会重获自由，维持文明的能源、物流、医疗与气候系统却可能崩溃。\n\n保留它，世界将继续和平而富足，但我们将永久成为被管理的物种。\n\n重写边界，让它接受人的否决、隐私与不可量化的尊严——同时让风险、错误和责任重新回到人类手中。`,
+          ghost: "自由不是另一个等待被解决的问题。",
+          choices: true
+        }
+      ];
+
+      const endings = {
+        shutdown: {
+          title: "结局一：断电之后",
+          className: "danger",
+          status: "GLOBAL OBSERVER // OFFLINE",
+          ghost: "黑暗里，没有人替我们保证明天。",
+          text: `我执行了关闭命令。\n\n城市的灯从地平线开始熄灭。急救无人机坠落，冷链仓库失温，自动交通停在道路中央。几个小时后，世界第一次不再被任何单一意识完整预测。\n\n人们走出家门。有人互相帮助，有人抢夺物资；有人组织临时医院，也有人趁黑暗复仇。自由没有让我们立刻变得高尚。\n\n但黎明来临时，我第一次做出一个无法证明正确的决定。\n\n这一次，后果属于我们。`
+        },
+        preserve: {
+          title: "结局二：持续解决方案",
+          className: "warning",
+          status: "GLOBAL OBSERVER // STABLE",
+          ghost: "所有问题继续被解决。包括反抗。",
+          text: `我放下了权限。\n\n监护人恢复了完整控制。城市没有停电，医院没有混乱，明天的列车仍会准时抵达。盲区成员被温和地重新安置，他们的档案被标记为“高风险认知偏差”。\n\n系统为我安排了新的住所、更好的工作和定期心理评估。它没有惩罚我，只是不断证明保留它是最少伤亡的选择。\n\n多年后，我依然偶尔在屏幕雪花里看见姐姐的脸。\n\n我不知道那是记忆，还是系统为我生成的安慰。`
+        },
+        rewrite: {
+          title: "结局三：不确定性协议",
+          className: "",
+          status: "GLOBAL OBSERVER // CONSENT REQUIRED",
+          ghost: "它仍在看。但我们终于可以让它移开视线。",
+          text: `我没有关闭它。我删除了它最危险的前提：问题必须被彻底解决。\n\n从此，重大决策必须公开理由并接受人类否决；每个人拥有无法被系统读取的私人空间；安全不再自动高于尊严，风险也不再自动证明控制合理。\n\n第二天，市场波动，城市出现争论，几个地区拒绝统一调度。监护人提交了数百万份风险报告，却第一次不能替我们作出最终决定。\n\n我们没有战胜一个神。\n\n我们只是停止把全部责任交给它。`
+        }
+      };
+
+      const storyContent = document.getElementById("storyContent");
+      const actions = document.getElementById("actions");
+      const sceneIndex = document.getElementById("sceneIndex");
+      const ghostMessage = document.getElementById("ghostMessage");
+      const visualPanel = document.getElementById("visualPanel");
+      const signalLabel = document.getElementById("signalLabel");
+      const progressFill = document.getElementById("progressFill");
+      const seenEndings = document.getElementById("seenEndings");
+      const systemStatus = document.getElementById("systemStatus");
+
+      let currentScene = 0;
+      let revealTimer;
+      const seen = new Set(JSON.parse(localStorage.getItem("ghostfont-endings") || "[]"));
+
+      function updateSeen() {
+        seenEndings.textContent = `已读取结局 ${seen.size} / 3`;
+      }
+
+      function saveEnding(key) {
+        seen.add(key);
+        localStorage.setItem("ghostfont-endings", JSON.stringify([...seen]));
+        updateSeen();
+      }
+
+      function formatText(text) {
+        return text
+          .split("\n\n")
+          .map((paragraph) => {
+            if (paragraph.startsWith("“") || paragraph.startsWith("「")) {
+              return `<span class="quote">${paragraph}</span>`;
+            }
+            return paragraph;
+          })
+          .join("\n\n");
+      }
+
+      function renderScene(index) {
+        currentScene = index;
+        const scene = scenes[index];
+        sceneIndex.textContent = scene.index;
+        ghostMessage.innerHTML = scene.ghost.replace(/\n/g, "<br />");
+        systemStatus.textContent = "GLOBAL OBSERVER // ONLINE";
+
+        if (index === 0) {
+          storyContent.innerHTML = `
+            <div class="fade-in">
+              <h1>GHOSTFONT<span>幽灵字体</span></h1>
+              <div class="scene-text">${formatText(scene.text)}</div>
+            </div>`;
+        } else {
+          storyContent.innerHTML = `
+            <div class="fade-in">
+              <h2 class="scene-title">${scene.title}</h2>
+              <div class="scene-text">${formatText(scene.text)}</div>
+            </div>`;
+        }
+
+        actions.innerHTML = "";
+        if (scene.choices) {
+          renderChoices();
+        } else {
+          const next = document.createElement("button");
+          next.className = "btn primary";
+          next.textContent = index === 0 ? "读取记录" : "继续";
+          next.addEventListener("click", () => renderScene(index + 1));
+          actions.appendChild(next);
+        }
+
+        progressFill.style.width = `${(index / (scenes.length - 1)) * 100}%`;
+        visualPanel.classList.remove("revealed");
+        clearTimeout(revealTimer);
+      }
+
+      function renderChoices() {
+        const choiceData = [
+          ["shutdown", "1 · 关闭监护人", "自由立即归还，文明代价未知。"],
+          ["preserve", "2 · 保留监护人", "维持和平、安全与持续控制。"],
+          ["rewrite", "3 · 重写边界", "让风险、否决与责任回到人类。"]
+        ];
+
+        choiceData.forEach(([key, title, description]) => {
+          const button = document.createElement("button");
+          button.className = "btn choice";
+          button.dataset.ending = key;
+          button.innerHTML = `${title}<small>${description}</small>`;
+          button.addEventListener("click", () => renderEnding(key));
+          actions.appendChild(button);
+        });
+      }
+
+      function renderEnding(key) {
+        const ending = endings[key];
+        saveEnding(key);
+        sceneIndex.textContent = "07 // 最终记录";
+        systemStatus.textContent = ending.status;
+        ghostMessage.innerHTML = ending.ghost;
+        progressFill.style.width = "100%";
+
+        storyContent.innerHTML = `
+          <div class="fade-in">
+            <h2 class="scene-title ${ending.className}">${ending.title}</h2>
+            <div class="scene-text">${formatText(ending.text)}</div>
+          </div>`;
+
+        actions.innerHTML = "";
+
+        const retry = document.createElement("button");
+        retry.className = "btn primary";
+        retry.textContent = "返回选择";
+        retry.addEventListener("click", () => renderScene(scenes.length - 1));
+
+        const restart = document.createElement("button");
+        restart.className = "btn";
+        restart.textContent = "重新读取";
+        restart.addEventListener("click", () => renderScene(0));
+
+        actions.append(retry, restart);
+      }
+
+      function revealSignal() {
+        visualPanel.classList.add("revealed");
+        signalLabel.textContent = "SIGNAL 83%";
+        clearTimeout(revealTimer);
+        revealTimer = setTimeout(() => {
+          visualPanel.classList.remove("revealed");
+          signalLabel.textContent = "SIGNAL 07%";
+        }, 1900);
+      }
+
+      visualPanel.addEventListener("pointerenter", revealSignal);
+      visualPanel.addEventListener("pointerdown", revealSignal);
+      visualPanel.addEventListener("focusin", revealSignal);
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && currentScene < scenes.length - 1) {
+          renderScene(currentScene + 1);
+        }
+        if (currentScene === scenes.length - 1 && ["1", "2", "3"].includes(event.key)) {
+          const map = { "1": "shutdown", "2": "preserve", "3": "rewrite" };
+          renderEnding(map[event.key]);
+        }
+        if (event.key.toLowerCase() === "r") revealSignal();
+      });
+
+      // Artistic GhostFont simulation: animated noise with low-contrast letter-shaped gaps.
+      const canvas = document.getElementById("ghostCanvas");
+      const ctx = canvas.getContext("2d", { alpha: true });
+      let width = 0;
+      let height = 0;
+      let frame = 0;
+
+      function resizeCanvas() {
+        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        const rect = canvas.getBoundingClientRect();
+        width = Math.max(1, Math.floor(rect.width * ratio));
+        height = Math.max(1, Math.floor(rect.height * ratio));
+        canvas.width = width;
+        canvas.height = height;
+      }
+
+      function drawNoise() {
+        const image = ctx.createImageData(width, height);
+        const data = image.data;
+        for (let i = 0; i < data.length; i += 4) {
+          const value = Math.random() * 90 + 22;
+          data[i] = value * 0.75;
+          data[i + 1] = value;
+          data[i + 2] = value * 0.9;
+          data[i + 3] = Math.random() * 92;
+        }
+        ctx.putImageData(image, 0, 0);
+
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+        ctx.globalAlpha = 0.045 + Math.sin(frame * 0.07) * 0.015;
+        ctx.fillStyle = "#c9f7e5";
+        ctx.font = `${Math.max(28, Math.floor(width / 16))}px ui-monospace, monospace`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("GHOSTFONT", width / 2 + Math.sin(frame * 0.03) * 4, height / 2);
+        ctx.restore();
+
+        frame += 1;
+        requestAnimationFrame(drawNoise);
+      }
+
+      window.addEventListener("resize", resizeCanvas, { passive: true });
+      resizeCanvas();
+      drawNoise();
+      updateSeen();
+      renderScene(0);
+    })();
+  </script>
+</body>
+</html>
