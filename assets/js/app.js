@@ -57,10 +57,13 @@ function projectCard(entry, index) {
   </a>`;
 }
 
+function conceptCard(entry) {
+  return `<article class="concept-card"><div class="concept-copy"><p class="eyebrow">02 / CONCEPT LAB</p><h2>${escapeHtml(entry.title)}</h2><p class="concept-lead">${escapeHtml(entry.summary)}</p><div class="tag-list">${tags(entry.tags)}</div><a class="button-link" href="${entryUrl(entry)}">Enter the narrative <span>↗</span></a></div><a class="concept-cover" href="${entryUrl(entry)}" aria-label="体验 ${escapeHtml(entry.title)}"><img src="${escapeHtml(entry.cover)}" alt="${escapeHtml(entry.title)}封面"><span>Interactive<br>narrative</span></a></article>`;
+}
+
 function homeView() {
   const projects = (catalog.entries || []).filter((entry) => entry.section === 'work');
   const concepts = (catalog.entries || []).filter((entry) => entry.section === 'concept');
-  const ghostfont = concepts[0];
   const github = catalog.contact?.github || 'https://github.com/ventsdenye2';
   return `<div class="home-page">
     <section class="depth-hero" id="home" data-depth-hero>
@@ -82,7 +85,7 @@ function homeView() {
       <div class="projects-grid">${projects.map(projectCard).join('')}</div>
     </section>
 
-    ${ghostfont ? `<section class="concept-section section-wrap" id="concepts"><div class="concept-card"><div class="concept-copy"><p class="eyebrow">02 / CONCEPT LAB</p><h2>${escapeHtml(ghostfont.title)}</h2><p class="concept-lead">${escapeHtml(ghostfont.summary)}</p><div class="tag-list">${tags(ghostfont.tags)}</div><a class="button-link" href="${entryUrl(ghostfont)}">Enter the narrative <span>↗</span></a></div><a class="concept-cover" href="${entryUrl(ghostfont)}" aria-label="体验 ${escapeHtml(ghostfont.title)}"><img src="${escapeHtml(ghostfont.cover)}" alt="${escapeHtml(ghostfont.title)}封面"><span>Interactive<br>narrative</span></a></div><p class="concept-caption">Concept Lab 收录仍在生长的叙事与交互实验；它们与正式项目分开展示，但同样可以被体验。</p></section>` : ''}
+    ${concepts.length ? `<section class="concept-section section-wrap" id="concepts"><div class="concept-list">${concepts.map(conceptCard).join('')}</div><p class="concept-caption">Concept Lab 收录仍在生长的叙事与交互实验；它们与正式项目分开展示，但同样可以被体验。</p></section>` : ''}
 
     <section class="about-section section-wrap" id="about"><div><p class="eyebrow">03 / ABOUT</p><h2>Technology is a material.<br><em>Experience is the point.</em></h2></div><div class="about-copy"><p>我是泽，一名计算机专业学生与创作者。我关注游戏、图形、交互叙事与人如何在系统中作出选择。</p><p>${escapeHtml(catalog.fields)}</p></div></section>
 
@@ -134,7 +137,7 @@ async function render() {
 }
 
 async function loadCatalog() {
-  try { const response = await fetch('content/index.json'); if (!response.ok) throw new Error('Catalog unavailable'); return await response.json(); }
+  try { const response = await fetch('content/index.json', { cache: 'no-store' }); if (!response.ok) throw new Error('Catalog unavailable'); return await response.json(); }
   catch { const fallback = document.querySelector('#catalog-fallback')?.textContent; if (!fallback) throw new Error('Catalog unavailable'); return JSON.parse(fallback); }
 }
 

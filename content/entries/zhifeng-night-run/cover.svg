@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">知风夜跑</title>
+  <desc id="desc">夜色校园道路与路灯构成的互动叙事项目封面</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#05090d"/><stop offset=".55" stop-color="#0d171c"/><stop offset="1" stop-color="#1b251e"/></linearGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#172025"/><stop offset="1" stop-color="#06090d"/></linearGradient>
+    <radialGradient id="lamp"><stop stop-color="#fff3bd"/><stop offset=".22" stop-color="#d9c998" stop-opacity=".76"/><stop offset="1" stop-color="#d9c998" stop-opacity="0"/></radialGradient>
+    <pattern id="grain" width="32" height="32" patternUnits="userSpaceOnUse"><circle cx="6" cy="9" r="1" fill="#e5f2dd" opacity=".18"/><circle cx="25" cy="20" r=".7" fill="#d9c998" opacity=".16"/></pattern>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#sky)"/><rect width="1600" height="1000" fill="url(#grain)"/>
+  <path d="M0 1000 L530 395 H1070 L1600 1000Z" fill="url(#road)"/>
+  <path d="M800 395V1000M660 1000L760 395M940 1000L840 395" stroke="#d7ded0" stroke-opacity=".16" stroke-width="3"/>
+  <g stroke="#303b37" stroke-width="9"><path d="M230 760V278"/><path d="M1370 760V345"/><path d="M470 615V390"/><path d="M1130 615V430"/></g>
+  <g fill="url(#lamp)"><circle cx="230" cy="270" r="180"/><circle cx="1370" cy="337" r="160"/><circle cx="470" cy="382" r="100"/><circle cx="1130" cy="422" r="90"/></g>
+  <g fill="#d9c998"><circle cx="230" cy="270" r="7"/><circle cx="1370" cy="337" r="6"/><circle cx="470" cy="382" r="4"/><circle cx="1130" cy="422" r="4"/></g>
+  <path d="M0 620 Q190 510 385 615T730 580V1000H0Z" fill="#09100f"/><path d="M1600 610 Q1420 500 1215 625T870 570V1000H1600Z" fill="#09100f"/>
+  <g fill="#020405"><circle cx="800" cy="605" r="20"/><path d="M782 628h36l15 94h-19l-14-48-14 48h-19z"/><path d="M782 695l-42 91h21l44-66M818 695l42 91h-21l-44-66"/></g>
+  <text x="92" y="120" fill="#d6e1d3" font-family="Arial, sans-serif" font-size="26" letter-spacing="8">CONCEPT / INTERACTIVE NARRATIVE / 2026</text>
+  <text x="88" y="208" fill="#eef1e8" font-family="STSong, SimSun, serif" font-size="96" font-weight="700" letter-spacing="8">知风夜跑</text>
+  <text x="95" y="255" fill="#b3bcae" font-family="Arial, sans-serif" font-size="22" letter-spacing="4">RUN INTO THE NIGHT. KEEP MOVING.</text>
+  <text x="93" y="910" fill="#d6ddcf" font-family="Arial, sans-serif" font-size="25" letter-spacing="2">ALTERNATE A / D — OR LEFT / RIGHT — TO STAY IN MOTION</text>
+</svg>

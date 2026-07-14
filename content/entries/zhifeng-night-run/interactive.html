@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>知风夜跑｜交互叙事</title>
+<style>
+  :root{
+    --ink:#eef1e8;
+    --muted:#aab1a6;
+    --night:#06090d;
+    --deep:#0b1015;
+    --lamp:#d9c998;
+    --red:#b6373f;
+    --green:#668c70;
+    --panel:rgba(7,10,14,.72);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--night);color:var(--ink)}
+  body{
+    font-family:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
+    letter-spacing:.03em;
+    user-select:none;
+  }
+  button{font:inherit}
+  #world{
+    position:fixed;inset:0;overflow:hidden;
+    background:
+      radial-gradient(circle at 54% 18%, rgba(60,75,85,.18), transparent 28%),
+      linear-gradient(#05080c 0%, #0a0f13 54%, #111714 100%);
+  }
+  #sky-noise{
+    position:absolute;inset:-20%;
+    opacity:.18;mix-blend-mode:screen;pointer-events:none;
+    background-image:
+      radial-gradient(circle, rgba(255,255,255,.25) 0 1px, transparent 1.5px);
+    background-size:31px 29px;
+    animation:drift 18s linear infinite;
+  }
+  @keyframes drift{to{transform:translate3d(30px,15px,0)}}
+  #campus{
+    position:absolute;inset:0;
+    perspective:700px;
+  }
+  .building{
+    position:absolute;bottom:34%;height:28%;background:#0b1116;
+    border-top:1px solid rgba(210,220,210,.07);
+    box-shadow:0 0 70px rgba(0,0,0,.7);
+  }
+  .building.left{left:-6%;width:42%;transform:skewY(-2deg)}
+  .building.right{right:-8%;width:37%;transform:skewY(2deg)}
+  .windows{
+    position:absolute;inset:8% 8%;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 42px, rgba(216,202,153,.15) 43px 52px, transparent 53px 76px),
+      repeating-linear-gradient(0deg, transparent 0 38px, rgba(216,202,153,.07) 39px 46px, transparent 47px 70px);
+    opacity:.5
+  }
+  #road{
+    position:absolute;left:50%;bottom:-20%;width:72%;height:78%;
+    transform:translateX(-50%) rotateX(62deg);
+    transform-origin:center bottom;
+    background:
+      linear-gradient(90deg, transparent 49.6%, rgba(225,225,214,.13) 49.8% 50.2%, transparent 50.4%),
+      linear-gradient(#121719,#0b0f10);
+    clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);
+    box-shadow:0 -10px 40px rgba(0,0,0,.8) inset;
+  }
+  .lamp{
+    position:absolute;bottom:23%;width:4px;height:42%;background:#222a28;
+    transform-origin:bottom;
+  }
+  .lamp:before{
+    content:"";position:absolute;top:-8px;left:-11px;width:26px;height:12px;
+    border-radius:10px 10px 4px 4px;background:#7d775f;
+    box-shadow:0 0 20px 8px rgba(222,204,145,.34),0 0 80px 24px rgba(222,204,145,.09);
+  }
+  .lamp.l1{left:17%;transform:scale(.75)}
+  .lamp.l2{left:31%;transform:scale(.55)}
+  .lamp.l3{right:17%;transform:scale(.75)}
+  .lamp.l4{right:31%;transform:scale(.55)}
+  #passerby{
+    position:absolute;left:72%;bottom:35%;width:16px;height:46px;opacity:.58;
+    background:linear-gradient(#191e21 0 30%,#0d1114 30%);
+    border-radius:9px 9px 4px 4px;
+    animation:pass 8s linear infinite;
+  }
+  #passerby:before{
+    content:"";position:absolute;width:11px;height:11px;border-radius:50%;background:#161b1e;left:3px;top:-8px;
+  }
+  #passerby:after{
+    content:"";position:absolute;width:9px;height:12px;background:#1b2328;right:-7px;top:14px;transform:rotate(14deg);
+  }
+  @keyframes pass{
+    0%,12%{opacity:0;transform:translateX(120px)}
+    24%,55%{opacity:.55}
+    70%,100%{opacity:0;transform:translateX(-410px) scale(.7)}
+  }
+  #flowers,#trees,#spiritLayer{position:absolute;inset:0;pointer-events:none}
+  .flower{
+    position:absolute;bottom:20%;width:6px;height:42px;background:#334438;
+    transform-origin:bottom;filter:drop-shadow(0 8px 9px rgba(0,0,0,.6));
+  }
+  .flower:before,.flower:after{
+    content:"";position:absolute;top:-9px;width:12px;height:12px;border-radius:60% 20% 60% 30%;
+    background:#9f8e9b;opacity:.8;
+  }
+  .flower:before{left:-8px;transform:rotate(-28deg)}
+  .flower:after{right:-8px;transform:rotate(28deg)}
+  .flower.whisper{animation:whisper 1.8s ease-in-out infinite}
+  @keyframes whisper{50%{transform:rotate(4deg) scaleY(.96)}}
+  .tree{
+    position:absolute;bottom:16%;width:24px;height:48%;border-radius:60% 40% 20% 20%;
+    background:linear-gradient(90deg,#171916,#303229 45%,#141613);
+    transform-origin:bottom;
+    box-shadow:0 0 30px #000;
+  }
+  .tree:before{
+    content:"";position:absolute;left:50%;top:-28%;width:170px;height:120px;transform:translateX(-50%);
+    border-radius:50%;background:radial-gradient(circle,#1b241b 0 38%,transparent 70%);
+    filter:blur(2px);
+  }
+  #runner{
+    position:absolute;left:50%;bottom:13%;width:36px;height:92px;transform:translateX(-50%);
+    transition:filter .2s, transform .15s, opacity .8s;
+    filter:drop-shadow(0 10px 10px rgba(0,0,0,.8));
+  }
+  #runner .head{position:absolute;left:9px;top:0;width:18px;height:18px;border-radius:50%;background:#090b0e}
+  #runner .body{position:absolute;left:12px;top:17px;width:12px;height:37px;background:#0c1014;border-radius:7px}
+  #runner .arm,#runner .leg{position:absolute;width:7px;background:#0c1014;border-radius:6px;transform-origin:top}
+  #runner .arm{top:23px;height:31px}
+  #runner .leg{top:50px;height:40px}
+  #runner .arm.a{left:12px;transform:rotate(28deg)}
+  #runner .arm.b{right:12px;transform:rotate(-28deg)}
+  #runner .leg.a{left:14px;transform:rotate(10deg)}
+  #runner .leg.b{right:14px;transform:rotate(-10deg)}
+  #runner.stepL .arm.a{transform:rotate(-42deg)} #runner.stepL .arm.b{transform:rotate(42deg)}
+  #runner.stepL .leg.a{transform:rotate(32deg)} #runner.stepL .leg.b{transform:rotate(-32deg)}
+  #runner.stepR .arm.a{transform:rotate(42deg)} #runner.stepR .arm.b{transform:rotate(-42deg)}
+  #runner.stepR .leg.a{transform:rotate(-32deg)} #runner.stepR .leg.b{transform:rotate(32deg)}
+  #runner.shrink{animation:shrink 5s ease-in forwards}
+  @keyframes shrink{
+    55%{transform:translateX(-50%) scale(.65);filter:blur(.5px)}
+    100%{transform:translateX(-50%) translateY(72px) scale(.09);opacity:.1;filter:blur(2px)}
+  }
+  #runner.mad{filter:drop-shadow(0 0 14px rgba(180,35,45,.7))}
+  #blade{
+    position:absolute;left:24px;top:25px;width:4px;height:70px;background:linear-gradient(#ddd,#5d6061);
+    transform:rotate(-35deg);transform-origin:bottom;opacity:0;
+    box-shadow:0 0 10px rgba(255,255,255,.25);
+  }
+  #runner.slash #blade{opacity:1;animation:slash .18s linear}
+  @keyframes slash{from{transform:rotate(-80deg)}to{transform:rotate(45deg)}}
+  #vignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 180px 45px rgba(0,0,0,.88)}
+  #grain{
+    position:absolute;inset:0;pointer-events:none;opacity:.09;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.65'/%3E%3C/svg%3E");
+  }
+  #ui{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;padding:5vh 5vw}
+  #panel{
+    width:min(900px,94vw);min-height:170px;padding:24px 28px 22px;
+    background:linear-gradient(180deg,rgba(6,9,12,.5),rgba(6,9,12,.86));
+    border:1px solid rgba(230,235,225,.12);
+    box-shadow:0 18px 70px rgba(0,0,0,.55);
+    backdrop-filter:blur(8px);
+    position:relative;
+  }
+  #speaker{font-size:13px;letter-spacing:.32em;color:#b5bcb1;margin-bottom:10px}
+  #text{font-size:clamp(17px,2.15vw,23px);line-height:1.9;min-height:72px;text-shadow:0 2px 5px #000}
+  #subtext{font-family:system-ui,sans-serif;color:var(--muted);font-size:12px;line-height:1.7;margin-top:10px}
+  #choices{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+  .choice,.smallBtn{
+    color:var(--ink);background:rgba(255,255,255,.03);border:1px solid rgba(238,241,232,.2);
+    padding:11px 16px;cursor:pointer;transition:.2s;
+  }
+  .choice:hover,.smallBtn:hover{background:rgba(255,255,255,.1);transform:translateY(-1px)}
+  #hud{
+    position:absolute;left:5vw;right:5vw;top:4vh;display:flex;justify-content:space-between;
+    font:12px/1.5 system-ui,sans-serif;color:#c2c7be;letter-spacing:.08em;pointer-events:none;
+  }
+  #progressWrap{width:min(420px,45vw)}
+  #progressLine{height:2px;background:rgba(255,255,255,.13);margin-top:7px;overflow:hidden}
+  #progress{height:100%;width:0;background:#d9c998;transition:width .2s}
+  #breath{opacity:.7;text-align:right}
+  #controlHint{
+    position:absolute;left:50%;top:15%;transform:translateX(-50%);
+    font:12px/1.7 system-ui,sans-serif;letter-spacing:.18em;color:#aeb5aa;
+    padding:8px 13px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.22);
+    transition:opacity .5s;pointer-events:none;text-align:center;
+  }
+  #touchZones{position:absolute;inset:0;display:none}
+  .touchZone{width:50%;height:100%;display:flex;align-items:center;justify-content:center;font:700 36px system-ui;color:rgba(255,255,255,.08)}
+  #overlay{
+    position:absolute;inset:0;background:rgba(2,4,6,.86);display:flex;align-items:center;justify-content:center;padding:30px;
+    z-index:20;transition:opacity .8s;
+  }
+  #titleCard{width:min(760px,90vw);text-align:center}
+  h1{font-weight:400;font-size:clamp(38px,8vw,88px);margin:0;letter-spacing:.18em}
+  .lead{color:#bcc2b9;line-height:2;margin:24px auto 28px;max-width:620px}
+  #startBtn{
+    background:transparent;border:1px solid rgba(255,255,255,.28);color:#eef1e8;padding:13px 28px;cursor:pointer;
+    letter-spacing:.22em;
+  }
+  #startBtn:hover{background:rgba(255,255,255,.08)}
+  .endingTitle{font-size:clamp(34px,6vw,66px);letter-spacing:.12em;margin-bottom:18px}
+  .endingBody{font-size:clamp(16px,2vw,21px);line-height:2;max-width:760px;margin:0 auto;color:#d6dbd1}
+  .endingBody em{color:#e8d8a5;font-style:normal}
+  #endingActions{margin-top:25px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .hidden{display:none!important}
+  .fade{opacity:0!important;pointer-events:none}
+  .shake{animation:shake .22s linear}
+  @keyframes shake{25%{transform:translateX(-7px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+  .redwash:after{
+    content:"";position:absolute;inset:0;background:rgba(120,0,8,.15);mix-blend-mode:screen;pointer-events:none
+  }
+  #quote{
+    position:absolute;left:50%;top:28%;transform:translate(-50%,-50%);
+    width:min(760px,86vw);font-size:clamp(20px,3.2vw,38px);line-height:1.65;text-align:center;
+    opacity:0;transition:opacity .5s;text-shadow:0 4px 18px #000;pointer-events:none;
+  }
+  .organ{
+    position:absolute;font:13px system-ui;color:#c7b9a8;opacity:0;animation:rise 2.5s forwards;
+  }
+  @keyframes rise{0%{opacity:0;transform:translateY(20px)}35%{opacity:.8}100%{opacity:0;transform:translateY(-80px)}}
+
+
+  #campus.strideL{animation:strideL .24s ease-out}
+  #campus.strideR{animation:strideR .24s ease-out}
+  @keyframes strideL{
+    0%{transform:translate3d(0,0,0)}
+    42%{transform:translate3d(-2px,3px,0)}
+    100%{transform:translate3d(0,0,0)}
+  }
+  @keyframes strideR{
+    0%{transform:translate3d(0,0,0)}
+    42%{transform:translate3d(2px,3px,0)}
+    100%{transform:translate3d(0,0,0)}
+  }
+  #panel{transition:opacity .38s ease,transform .38s ease}
+  #panel.arrive{animation:panelArrive .5s ease both}
+  @keyframes panelArrive{
+    from{opacity:0;transform:translateY(8px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  #world, #campus, #road, .building, .lamp, #passerby{
+    transition:filter 2.4s ease,opacity 2.4s ease,background 2.4s ease,transform 2.4s ease;
+  }
+  #hud,#controlHint{transition:opacity 1.2s ease}
+  #world.soft-dawn{
+    background:
+      radial-gradient(circle at 55% 14%,rgba(112,124,123,.18),transparent 33%),
+      linear-gradient(#0a1015 0%,#11191b 52%,#1a201b 100%);
+  }
+  #world.soft-dawn .lamp:before{box-shadow:0 0 14px 5px rgba(222,204,145,.2)}
+  #world.soft-dawn .building{filter:brightness(1.12);opacity:.82}
+  #world.still #passerby{opacity:0;animation-play-state:paused}
+  #world.still #sky-noise{animation-play-state:paused}
+  #world.still #road{filter:blur(.7px) brightness(.7)}
+  #world.flower-world .building,#world.flower-world .lamp{opacity:.42;filter:blur(1px)}
+  #world.flower-world #road{filter:blur(1.5px) brightness(.54);opacity:.72}
+  #runner.weary .body{transform:rotate(10deg);transform-origin:bottom}
+  #runner.weary .head{transform:translate(5px,7px)}
+  #runner.weary .arm.a{transform:rotate(16deg)}
+  #runner.weary .arm.b{transform:rotate(-10deg)}
+  #runner.rooting{animation:rooting 6.4s cubic-bezier(.5,0,.25,1) forwards}
+  #runner.rooting .arm,#runner.rooting .leg{transition:background 3s; background:#263329}
+  #runner.rooting .body{transition:background 3s; background:#263329}
+  @keyframes rooting{
+    0%{transform:translateX(-50%) scale(1);opacity:1}
+    28%{transform:translateX(-50%) translateY(8px) scale(.92);opacity:.95}
+    62%{transform:translateX(-50%) translateY(46px) scale(.48);opacity:.62;filter:blur(.6px)}
+    100%{transform:translateX(-50%) translateY(78px) scale(.08);opacity:0;filter:blur(2px)}
+  }
+  #runner.armed #blade{opacity:.72}
+  #runner.fallen{
+    transition:transform 2.6s cubic-bezier(.55,0,.8,.25),opacity 2.6s ease,filter 2.6s ease;
+    transform:translateX(-50%) translateY(45px) rotate(78deg)!important;
+    opacity:.18;filter:blur(.6px) drop-shadow(0 0 16px rgba(150,0,10,.65));
+  }
+  #overlay{transition:opacity 1.8s ease,background 1.8s ease}
+  #titleCard{transition:opacity 1.3s ease .25s,transform 1.3s ease .25s}
+  #overlay.revealing #titleCard{opacity:0;transform:translateY(18px)}
+  #overlay.revealed #titleCard{opacity:1;transform:translateY(0)}
+  .narrativePulse{animation:narrativePulse 2.6s ease both}
+  @keyframes narrativePulse{
+    0%{opacity:0;transform:translate(-50%,-45%)}
+    18%,72%{opacity:1;transform:translate(-50%,-50%)}
+    100%{opacity:0;transform:translate(-50%,-55%)}
+  }
+
+
+  #overlay.ending-overlay{
+    position:fixed;
+    inset:0;
+    width:100vw;
+    height:100dvh;
+    display:block;
+    overflow-y:auto;
+    overflow-x:hidden;
+    overscroll-behavior:contain;
+    transform:none!important;
+    padding:clamp(34px,7vh,72px) clamp(18px,5vw,72px);
+    scrollbar-width:thin;
+    scrollbar-color:rgba(235,238,228,.24) transparent;
+  }
+  #overlay.ending-overlay.revealing{opacity:0}
+  #overlay.ending-overlay.revealed{opacity:1}
+  #overlay.ending-overlay.revealing #titleCard{
+    opacity:0;
+    transform:translateY(18px);
+  }
+  #overlay.ending-overlay.revealed #titleCard{
+    opacity:1;
+    transform:translateY(0);
+  }
+  #overlay.ending-overlay #titleCard{
+    width:min(900px,100%);
+    margin:0 auto;
+    padding:clamp(28px,4vw,48px) clamp(22px,5vw,58px);
+    background:linear-gradient(180deg,rgba(5,8,10,.76),rgba(5,8,10,.58));
+    border:1px solid rgba(235,238,228,.09);
+    box-shadow:0 28px 100px rgba(0,0,0,.38);
+    backdrop-filter:blur(7px);
+  }
+  #overlay.ending-overlay .endingTitle{
+    line-height:1.25;
+    margin-top:0;
+  }
+  #overlay.ending-overlay .endingBody{
+    max-width:760px;
+    text-align:left;
+    text-wrap:pretty;
+    font-size:clamp(16px,1.65vw,20px);
+    line-height:1.95;
+  }
+  #overlay.ending-overlay .endingBody br + br{
+    display:block;
+    content:"";
+    margin-top:.35em;
+  }
+  #world.stall-warning #passerby{
+    animation-play-state:paused;
+    opacity:.16;
+  }
+  #world.stall-warning #road{
+    filter:brightness(.82) blur(.25px);
+  }
+  #world.stall-warning .lamp:before{
+    box-shadow:0 0 17px 6px rgba(222,204,145,.22),0 0 65px 19px rgba(222,204,145,.06);
+  }
+  #runner.weary{
+    transition:transform .8s ease,filter .8s ease;
+    transform:translateX(-50%) translateY(4px) rotate(2deg);
+    filter:drop-shadow(0 10px 12px rgba(0,0,0,.9)) brightness(.82);
+  }
+  @media(max-width:700px){
+    #overlay.ending-overlay{padding:22px 12px 34px}
+    #overlay.ending-overlay #titleCard{padding:27px 20px 34px}
+    #overlay.ending-overlay .endingTitle{font-size:clamp(30px,10vw,48px)}
+    #overlay.ending-overlay .endingBody{font-size:16px;line-height:1.85}
+  }
+
+  @media(max-width:700px){
+    #panel{padding:20px 19px}
+    #hud{top:2vh}
+    #touchZones{display:flex}
+    #controlHint{top:11%}
+    .building{bottom:38%}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  }
+</style>
+</head>
+<body>
+<div id="world">
+  <div id="sky-noise"></div>
+  <div id="campus">
+    <div class="building left"><div class="windows"></div></div>
+    <div class="building right"><div class="windows"></div></div>
+    <div id="road"></div>
+    <div class="lamp l1"></div><div class="lamp l2"></div><div class="lamp l3"></div><div class="lamp l4"></div>
+    <div id="passerby"></div>
+    <div id="flowers"></div><div id="trees"></div><div id="spiritLayer"></div>
+    <div id="runner">
+      <div class="head"></div><div class="body"></div>
+      <div class="arm a"></div><div class="arm b"></div>
+      <div class="leg a"></div><div class="leg b"></div>
+      <div id="blade"></div>
+    </div>
+  </div>
+  <div id="quote"></div>
+  <div id="vignette"></div><div id="grain"></div>
+  <div id="hud" class="hidden">
+    <div id="progressWrap">夜跑进度 <span id="distance">0 / 100</span><div id="progressLine"><div id="progress"></div></div></div>
+    <div id="breath">呼吸：尚且平稳</div>
+  </div>
+  <div id="controlHint" class="hidden">交替按 A / D，或交替点击鼠标左键 / 右键<br>不要停下</div>
+  <div id="touchZones"><div class="touchZone">A</div><div class="touchZone">D</div></div>
+  <div id="ui">
+    <div id="panel" class="hidden">
+      <div id="speaker"></div>
+      <div id="text"></div>
+      <div id="subtext"></div>
+      <div id="choices"></div>
+    </div>
+  </div>
+  <div id="overlay">
+    <div id="titleCard">
+      <h1>知风夜跑</h1>
+      <div class="lead">
+        他曾为了成为某个人理想中的样子而跑。<br>
+        今夜，那个人已经离开，而路仍在脚下。<br><br>
+        也许意义并不先于行动存在。也许人必须先继续，才有机会知道自己为何继续。
+      </div>
+      <button id="startBtn">开始夜跑</button>
+    </div>
+  </div>
+</div>
+<script>
+(()=>{
+  const $=s=>document.querySelector(s);
+  const world=$("#world"), overlay=$("#overlay"), titleCard=$("#titleCard");
+  const panel=$("#panel"), speaker=$("#speaker"), text=$("#text"), subtext=$("#subtext"), choices=$("#choices");
+  const hud=$("#hud"), progress=$("#progress"), distance=$("#distance"), breath=$("#breath"), hint=$("#controlHint");
+  const runner=$("#runner"), flowers=$("#flowers"), trees=$("#trees"), quote=$("#quote"), spirit=$("#spiritLayer");
+  const touchZones=$("#touchZones");
+  let state="intro", branch=null, steps=0, target=108, lastSide=null, lastInput=Date.now(), idleTimer=null;
+  let sceneIndex=0, branchStep=0, locked=false, audio=null, madTree=0, injuries=0, sequenceToken=0, dialogueToken=0, lastStepAt=0, stallWarning=false;
+
+  const introLines=[
+    ["旁白","知风失恋了。关系并非在某一天骤然折断。它先在一次次索要证明的夜里变薄，最后断在一个双方都回答过太多遍的问题上。","“你到底还爱不爱我？”"],
+    ["旁白","她并非从未爱过他。他也并非故意将她逼远。只是每一句“我爱你”落进他心里，都像写在潮湿玻璃上的字，天一亮便淡了。","于是他不断请求重写，直到写字的人感到疲惫。"],
+    ["旁白","今晚，他换上跑鞋。过去跑步，是为了靠近她喜欢的身材；如今她已离开，那条理由也像被一并带走。","操场正在施工。知风只好沿教学区的路灯往前跑。"],
+    ["旁白","教学楼熄着大半窗户。偶尔有学生低头看手机，背着书包匆匆穿过灯下；更多时候，只有蝉把寂静锯出一道又一道细缝。","交替按 A / D，或交替点击鼠标左键 / 右键。奔跑阶段停下太久，夜色会替你作出选择。"]
+  ];
+
+  const softScenes=[
+    ["野花","她每次说爱你，那句话能在你心里活多久？","花被风压低，像是并不急着得到回答。"],
+    ["知风","有时一晚，有时只有几分钟。可她开口的时候，房间里那个声音确实会安静。",""],
+    ["野花","于是你把她留在一只漏水的杯子旁，请她不停往里添水。你不是故意折磨她；你只是从未相信，杯子也可以由自己慢慢修补。",""],
+    ["知风","可最后确实是我把一切弄坏了。",""],
+    ["野花","你握得太紧，爱在手里疼了——这件事应当承认。但承认自己伤过人，与宣布自己不配被爱，并不是同一回事。",""],
+    ["知风","她不需要我这样频繁地出现。我靠近时，能看见她已经没有那么想说话。",""],
+    ["野花","那份倦意是真的。她的远不是对你的审判，你的近也不是一种罪。只是两个人把亲密听成了不同的节拍：一个觉得沉默仍是相爱，一个却在沉默里听见门锁落下。",""],
+    ["知风","那我只能学会少说、少要、少出现吗？",""],
+    ["野花","不是把自己削薄。你要学的是分辨：哪些饥饿可以自己煮一顿饭，哪些需要可以清楚地向爱人开口，哪些若长期得不到，就该承认这张桌子并不适合自己。",""],
+    ["知风","那这段恋爱到底给我留下了什么？除了一个已经来不及改正的我。",""],
+    ["野花","它留下了伤口，也留下伤口的形状。你终于看清，自己最怕的并不是失去她，而是她离开以后，连你也站到她那一边，一起把自己丢下。",""],
+    ["知风","可我现在还是不知道为什么要跑。",""],
+    ["野花","那就暂时不要为了什么。意义并不总在起点举着旗子等人；有时人先穿过这一夜，天亮后才发现，脚印替他保住了一个没有在半路消失的自己。",""],
+    ["旁白","花没有治好知风，也没有保证下一段爱会更容易。它只是把他一直交给别人的问题，轻轻放回他的手里：当没有谁为你的存在作证，你是否还肯陪自己走完余下的路？",""]
+  ];
+
+  const madTaunts=[
+    "看吧，你连悲伤都要别人批准。",
+    "你把索求叫作深情，把恐惧叫作忠诚。",
+    "她离开，不正说明柔软只会招来厌烦吗？",
+    "砍掉需要。砍掉记忆。砍掉那个总想被抱住的孩子。",
+    "再快一点。只要足够坚硬，世上便再没有什么能够离开你。",
+    "武士不需要答案。武士只需要把会说话的东西砍成沉默。"
+  ];
+
+  const initialFlowers=[[14,19],[19,17],[24,20],[69,18],[75,21],[80,17],[85,20]];
+
+  function makeFlowers(angry=false){
+    flowers.innerHTML="";
+    initialFlowers.forEach(([x,b],i)=>{
+      const f=document.createElement("div");
+      f.className="flower whisper";
+      f.style.left=x+"%";
+      f.style.bottom=b+"%";
+      f.style.transform=`scale(${.75+(i%3)*.18}) rotate(${i%2?-4:4}deg)`;
+      if(angry){
+        f.style.height=(82+(i%4)*31)+"px";
+        f.style.width="9px";
+        f.style.filter="drop-shadow(0 0 13px rgba(160,35,45,.55))";
+      }
+      flowers.appendChild(f);
+    });
+  }
+  makeFlowers();
+
+  function setDialogue(spk,body,sub=""){
+    dialogueToken++;
+    panel.classList.remove("hidden","arrive");
+    void panel.offsetWidth;
+    panel.classList.add("arrive");
+    speaker.textContent=spk;
+    text.textContent=body;
+    subtext.textContent=sub;
+    choices.innerHTML="";
+    return dialogueToken;
+  }
+
+  function hideDialogue(delay=0){
+    const token=dialogueToken;
+    setTimeout(()=>{
+      if(token===dialogueToken) panel.classList.add("hidden");
+    },delay);
+  }
+
+  function setRunHint(message){
+    hint.dataset.normal=message;
+    hint.innerHTML=message;
+  }
+
+  function enterStallWarning(){
+    if(stallWarning||locked)return;
+    stallWarning=true;
+    world.classList.add("stall-warning");
+    runner.classList.add("weary");
+    breath.textContent="呼吸：另一只脚迟迟没有落下";
+    hint.innerHTML="夜色正在靠近<br>现在迈步，仍然来得及";
+  }
+
+  function leaveStallWarning(){
+    if(!stallWarning)return;
+    stallWarning=false;
+    world.classList.remove("stall-warning");
+    runner.classList.remove("weary");
+    hint.innerHTML=hint.dataset.normal||"继续交替奔跑";
+  }
+
+  function showQuote(message,duration=2300){
+    quote.classList.remove("narrativePulse");
+    quote.textContent=message;
+    void quote.offsetWidth;
+    quote.classList.add("narrativePulse");
+    setTimeout(()=>quote.classList.remove("narrativePulse"),duration+120);
+  }
+
+  function runSequence(items,onDone){
+    const token=++sequenceToken;
+    let elapsed=0;
+    items.forEach(item=>{
+      elapsed+=item.delay||0;
+      setTimeout(()=>{
+        if(token!==sequenceToken)return;
+        if(item.quote)showQuote(item.quote,item.duration||2400);
+        if(item.dialogue)setDialogue(...item.dialogue);
+        if(item.hide)panel.classList.add("hidden");
+        if(item.action)item.action();
+      },elapsed);
+      elapsed+=item.hold||0;
+    });
+    setTimeout(()=>{ if(token===sequenceToken&&onDone)onDone(); },elapsed+120);
+  }
+
+  function typeEnding(title,body,mode=""){
+    clearInterval(idleTimer);
+    state="ending";
+    locked=true;
+    hud.style.opacity="0";
+    hint.style.opacity="0";
+    panel.classList.add("hidden");
+    quote.classList.remove("narrativePulse");
+    quote.style.opacity="0";
+    quote.textContent="";
+    overlay.style.display="block";
+    overlay.classList.add("ending-overlay","revealing");
+    overlay.scrollTop=0;
+    overlay.classList.remove("fade","revealed");
+    overlay.style.background=mode==="mad"?"rgba(10,0,2,.82)":"rgba(2,4,6,.88)";
+    titleCard.innerHTML=`<div class="endingTitle">${title}</div><div class="endingBody">${body}</div>
+      <div id="endingActions"><button class="smallBtn" id="again">重新开始</button></div>`;
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        overlay.classList.remove("revealing");
+        overlay.classList.add("revealed");
+      });
+    });
+    $("#again").onclick=()=>location.reload();
+  }
+
+  function startAudio(){
+    try{
+      audio=new (window.AudioContext||window.webkitAudioContext)();
+      const gain=audio.createGain();
+      gain.gain.value=.045;
+      gain.connect(audio.destination);
+      const osc=audio.createOscillator();
+      osc.type="sine";
+      osc.frequency.value=5150;
+      osc.connect(gain);
+      osc.start();
+      const lfo=audio.createOscillator(),lg=audio.createGain();
+      lfo.frequency.value=7.3;
+      lg.gain.value=900;
+      lfo.connect(lg);
+      lg.connect(osc.frequency);
+      lfo.start();
+      setTimeout(()=>gain.gain.linearRampToValueAtTime(.011,audio.currentTime+3),500);
+    }catch(e){}
+  }
+
+  function footSound(side){
+    if(!audio)return;
+    const o=audio.createOscillator(),g=audio.createGain();
+    o.type="triangle";
+    o.frequency.value=side==="L"?75:88;
+    g.gain.setValueAtTime(.075,audio.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.12);
+    o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+.13);
+  }
+
+  function nextIntro(){
+    if(sceneIndex<introLines.length){
+      const s=introLines[sceneIndex++];
+      setDialogue(...s);
+      choices.innerHTML=`<button class="choice" id="continue">继续</button>`;
+      $("#continue").onclick=nextIntro;
+    }else{
+      panel.classList.add("hidden");
+      hud.classList.remove("hidden");
+      hint.classList.remove("hidden");
+      setRunHint("交替按 A / D，或交替点击鼠标左键 / 右键<br>不要停下");
+      distance.textContent=`0 / ${target}`;
+      state="run";
+      lastInput=Date.now();
+      startIdle();
+    }
+  }
+
+  function startIdle(){
+    clearInterval(idleTimer);
+    idleTimer=setInterval(()=>{
+      if(locked)return;
+      if(!["run","softRun","madRun"].includes(state))return;
+      const elapsed=Date.now()-lastInput;
+      const warningAt=state==="madRun"?3000:3600;
+      const endingAt=state==="madRun"?5900:6900;
+      if(elapsed>warningAt)enterStallWarning();
+      if(elapsed>endingAt)startFlowerEnding();
+    },220);
+  }
+
+  function startFlowerEnding(){
+    if(!["run","softRun","madRun"].includes(state))return;
+    state="flowerOutro";
+    locked=true;
+    clearInterval(idleTimer);
+    stallWarning=false;
+    world.classList.remove("stall-warning");
+    world.classList.add("still");
+    runner.classList.add("weary");
+    hud.style.opacity=".28";
+    hint.style.opacity="0";
+    breath.textContent="呼吸：脚步声已经停了";
+    runSequence([
+      {quote:"知风没有倒下。他只是没有把另一只脚送出去。第一秒里，这甚至不像一个决定。",hold:2500},
+      {quote:"第二秒到来时，他仍站着。直到这时他才发现：路灯不再从身旁退去，教学楼也不再向后滑行。",hold:2900},
+      {dialogue:["旁白","他告诉自己只歇一会儿，等一个能够重新出发的念头。可念头没有来。身体不再向前以后，夜色便开始缓慢地向他靠近。","蝉声一层层退远，像有人从世界背面合上窗户。"],hold:3200},
+      {hide:true,action:()=>{
+        world.classList.add("flower-world");
+        runner.classList.remove("weary");
+        runner.classList.add("rooting");
+      },quote:"最先变软的是双腿。不是疼，只是忽然不再坚持人的形状。",hold:3000},
+      {action:()=>{
+        makeFlowers();
+        const f=document.createElement("div");
+        f.className="flower whisper";
+        f.style.left="49.8%";
+        f.style.bottom="14%";
+        f.style.height="62px";
+        f.style.transform="scale(1.2)";
+        f.style.opacity="0";
+        f.style.transition="opacity 2.2s ease";
+        flowers.appendChild(f);
+        requestAnimationFrame(()=>f.style.opacity="1");
+      },quote:"膝盖向泥土弯去，脊背缩成一根细茎；他最后留下的，是一个无人听见的吸气。",hold:3400},
+      {dialogue:["旁白","天亮以前，知风成为路边一朵没有品种的花。清晨的学生从他身旁经过，没有人知道这里曾站着一个不知为何继续的人。","后来每逢深夜，他都注视那些失恋后跑过教学区的人。"],hold:3900},
+      {hide:true,quote:"他想对他们说：可以停一会儿。只是别一直等着世界先给出理由，才肯把下一步还给自己。",hold:3000}
+    ],()=>{
+      typeEnding("第三结局：路旁之花",
+        `知风听见过花，也可能举起过那把并不存在的刀；可无论理解还是癫狂，都尚未来得及在他身上完成。他停在两种去路之间，等待一个足以替自己作出下一步的理由。<br><br>
+        理由没有从夜色里走来。等待却先长出根须，把他的脚踝、姓名和未完成的人生一并固定在路旁。<br><br>
+        从此，他看见许多人带着相似的神情经过：有人哭着跑远，有人喘息后重新迈步，也有人在他身旁停得太久。风吹来时，他拼命摇晃花冠，想告诉他们——<em>停歇可以是一段动作，却不该被误认成一种命运；没有答案时迈出的半步，也仍然属于自己。</em>`,
+        "flower");
+    });
+  }
+
+  function registerStep(side){
+    if(locked||!["run","softRun","madRun"].includes(state))return;
+    const now=Date.now();
+    lastInput=now;
+    if(now-lastStepAt<270)return;
+    if(side===lastSide){
+      breath.textContent="步伐失衡：请交替输入";
+      world.classList.add("shake");
+      setTimeout(()=>world.classList.remove("shake"),180);
+      return;
+    }
+    if(stallWarning){
+      showQuote("鞋底终于重新落地。夜色没有退去，只是把他的形状还给了他。",2200);
+    }
+    leaveStallWarning();
+    lastSide=side;
+    lastStepAt=now;
+    steps++;
+    branchStep++;
+    const campus=$("#campus");
+    campus.classList.remove("strideL","strideR");
+    void campus.offsetWidth;
+    campus.classList.add(side==="L"?"strideL":"strideR");
+    runner.classList.remove("stepL","stepR");
+    void runner.offsetWidth;
+    runner.classList.add(side==="L"?"stepL":"stepR");
+    footSound(side);
+    const p=Math.min(100,steps/target*100);
+    progress.style.width=p+"%";
+    distance.textContent=`${Math.min(steps,target)} / ${target}`;
+    if(steps<18)breath.textContent="呼吸：尚且平稳";
+    else if(steps<36)breath.textContent="呼吸：开始凌乱";
+    else if(steps<72)breath.textContent=branch==="mad"?"呼吸：像铁屑刮过喉咙":"呼吸：疼，但仍可继续";
+    else breath.textContent=branch==="mad"?"呼吸：身体在替癫狂偿债":"呼吸：不再追问理由";
+    if(state==="madRun"){
+      runner.classList.add("slash","mad");
+      setTimeout(()=>runner.classList.remove("slash"),190);
+    }
+    advance();
+  }
+
+  function advance(){
+    if(state==="run"&&steps===12){
+      setDialogue("旁白","他跑过第一栋教学楼。手机安静得像一件已经退还的遗物。","屏幕没有亮起，世界也没有因此停止。");
+      hideDialogue(2100);
+    }
+    if(state==="run"&&steps===26){
+      setDialogue("旁白","路程将近一半，肺里像塞进一团浸水的纸。他慢了半步，鞋底擦过地面，发出近乎放弃的声音。","可下一只脚仍然落了下去。");
+      hideDialogue(2400);
+    }
+    if(state==="run"&&steps===36)encounter();
+    if(state==="softRun")softAdvance();
+    if(state==="madRun")madAdvance();
+  }
+
+  function encounter(){
+    locked=true;
+    state="choice";
+    clearInterval(idleTimer);
+    $("#passerby").style.opacity="0";
+    world.classList.add("shake");
+    showQuote("风从封闭的操场方向吹来。等知风再抬头，路上一个人影也没有。",2800);
+    setTimeout(()=>world.classList.remove("shake"),300);
+    setTimeout(()=>{
+      setDialogue("路边的野花","累了吗？","花蔫着，像一个同样熬过许多夜晚、因而不急着同情任何人的旁观者。");
+      choices.innerHTML=`
+        <button class="choice" id="talk">停下辩解，听花说完</button>
+        <button class="choice" id="refuse">不需要怜悯，继续跑</button>`;
+      $("#talk").onclick=()=>chooseSoft();
+      $("#refuse").onclick=()=>chooseMad();
+    },2600);
+  }
+
+  function chooseSoft(){
+    branch="soft";
+    branchStep=0;
+    panel.classList.add("hidden");
+    locked=false;
+    state="softRun";
+    target=180;
+    setRunHint("继续交替奔跑<br>让对话发生在脚步之间");
+    lastInput=Date.now();
+    startIdle();
+  }
+
+  function chooseMad(){
+    branch="mad";
+    branchStep=0;
+    state="madPrelude";
+    locked=true;
+    panel.classList.add("hidden");
+    clearInterval(idleTimer);
+    runSequence([
+      {quote:"知风低头看着那些花，忽然笑了。起初只是气息漏出喉咙，后来笑声越来越大，惊得蝉鸣短暂断了一拍。",hold:3100},
+      {dialogue:["知风","开导？你们不过是站在泥里，才把不能前进说成安稳。","他把悲伤解释成软弱，把求助解释成乞讨。这样一来，所有失败似乎都有了一个简单的敌人：柔软。"],hold:3400},
+      {hide:true,action:()=>{
+        world.classList.add("redwash");
+        makeFlowers(true);
+        runner.classList.add("mad","armed");
+      },quote:"花群在他眼前拔高，花瓣翻成一张张熟悉的嘴。道路则变窄，像一条只容武士通过的长廊。",hold:3300},
+      {quote:"知风从空气里抽出一把并不存在的刀。刀身雪亮，恰好足以切断一切他不愿承认的需要。",hold:3000}
+    ],()=>{
+      state="madRun";
+      locked=false;
+      target=122;
+      setRunHint("继续交替奔跑<br>每一步，都被他想象成一刀");
+      lastInput=Date.now();
+      startIdle();
+    });
+  }
+
+  function softAdvance(){
+    const idx=Math.floor((branchStep-1)/10);
+    if(branchStep>0&&branchStep%10===0&&idx<softScenes.length){
+      const s=softScenes[idx];
+      setDialogue(...s);
+      hideDialogue(2700);
+    }
+    if(branchStep>=softScenes.length*10+3)startSoftEnding();
+  }
+
+  function startSoftEnding(){
+    if(state!=="softRun")return;
+    state="softOutro";
+    locked=true;
+    clearInterval(idleTimer);
+    hint.style.opacity="0";
+    world.classList.add("soft-dawn");
+    runSequence([
+      {quote:"他跑过最后一盏仍亮着的路灯时，野花的声音已经听不见了。",hold:2900},
+      {dialogue:["旁白","脚下没有终点线。只有教学楼尽头一小片发白的天空，以及身体在疲惫中重新显出的重量。","他慢慢停下来。这一次，路没有把他留下；是他在亲自跑完这一程后，选择把脚步收回。"],hold:4100},
+      {hide:true,quote:"没有人因此回头，也没有人替他颁发意义。可他的心跳仍在胸腔里，一下一下，像某种尚未撤销的许可。",hold:3500}
+    ],()=>{
+      typeEnding("第一结局：风过之后",
+        `知风仍会想念，也仍会在某些夜里渴望一句能够永久生效的“我爱你”。他没有突然变成一个无所需求的人。<br><br>
+        只是从这一夜开始，他逐渐明白：别人的爱可以照亮自己，却不能永远代替自己发电；别人的沉默可以令人受伤，却没有资格直接注销一个人的价值。<br><br>
+        那段恋爱留下的并非一套保证下次不再犯错的技术。它留下了一条缓慢而艰难的边界——<em>我可以需要你，可以因你离开而悲伤；但当你不再为我作证，我仍愿意留在自己身边。</em><br><br>
+        天将亮时，知风向宿舍走去。他仍不知道人生究竟为了什么。但他第一次觉得，意义或许不是某个人提前写好的终点，而是一个人在没有答案时，仍肯迈出的下一步。`);
+    });
+  }
+
+  function spawnTree(scaleBoost=0){
+    const t=document.createElement("div");
+    t.className="tree";
+    t.style.left=(madTree%2?70-(madTree%3)*9:18+(madTree%3)*9)+"%";
+    t.style.transform=`scale(${.75+madTree*.08+scaleBoost})`;
+    trees.appendChild(t);
+    world.classList.add("shake");
+    setTimeout(()=>world.classList.remove("shake"),260);
+  }
+
+  function organWord(word){
+    const e=document.createElement("div");
+    e.className="organ";
+    e.textContent=word;
+    e.style.left=(35+Math.random()*30)+"%";
+    e.style.top=(35+Math.random()*25)+"%";
+    spirit.appendChild(e);
+    setTimeout(()=>e.remove(),2600);
+  }
+
+  function madAdvance(){
+    if(branchStep%6===0&&branchStep<=36){
+      const i=branchStep/6-1;
+      showQuote(madTaunts[i]||"",1600);
+      const f=flowers.children[0];
+      if(f){
+        f.style.transition=".5s";
+        f.style.transform+=" rotate(78deg) scaleY(.08)";
+        setTimeout(()=>f.remove(),470);
+      }
+    }
+    if(branchStep===40){
+      flowers.innerHTML="";
+      showQuote("最后一朵花倒下后，知风以为世界终于安静。紧接着，路旁的树发出了更低、更厚的笑声。",2700);
+    }
+    if(branchStep>40&&branchStep%7===0&&madTree<6){
+      madTree++;
+      spawnTree();
+      injuries++;
+      const wounds=["左腕在刀柄里折成一声脆响","一根肋骨向内弯曲，像要保护不存在的心","肝脏被挤成一枚发暗的果实","膝盖学会朝错误的方向开花","肺叶浮出一圈圈木纹","脊椎开始生根"];
+      organWord(wounds[injuries-1]);
+    }
+    if(branchStep>=84)startMadEnding();
+  }
+
+  function startMadEnding(){
+    if(state!=="madRun")return;
+    state="madOutro";
+    locked=true;
+    clearInterval(idleTimer);
+    hint.style.opacity="0";
+    breath.textContent="呼吸：已无法分辨是谁在使用这具身体";
+    runSequence([
+      {quote:"他已经不再感觉疼痛。疼痛被他一并判成了软弱，于是只好躲进骨头深处，继续替每一次挥刀记账。",hold:3100},
+      {action:()=>{for(let i=0;i<5;i++)setTimeout(()=>{madTree++;spawnTree(.15)},i*220);},quote:"树一棵接一棵站到路中央。它们没有追赶他，只是等待他把自己送上来。",hold:3400},
+      {action:()=>runner.classList.add("fallen"),quote:"最后一刀砍下时，刀没有进入树干。树干进入了他的手腕、肩膀、胸腔，沿着血管长出年轮。",hold:3600},
+      {dialogue:["旁白","知风倒在路上，却仍在笑。他宣布自己终于不再需要任何人。","蝉于是把笑声缝进他的耳膜；路灯俯下身饮他的影子；教学楼逐层张开黑色的窗，像无数没有眼珠的眼睛。"],hold:4300},
+      {hide:true,quote:"周围的生灵嗤笑他的癫狂，也敬重他的癫狂。它们分食他的骨肉，用来长出更坚硬、更沉默的东西。",hold:3600}
+    ],()=>{
+      typeEnding("第二结局：不弯之林",
+        `天亮以后，清洁工没有在路上发现尸体。那里只多出一排昨夜还不存在的树。<br><br>
+        腕骨成了最浅的根，肋骨在枝头围成空鸟巢，肝脏凝作琥珀色树脂，肺叶则彻底木质化，在风中发出沙哑的呼吸。后来已分不清是知风挥动过刀，还是那把刀借他的身体砍完了一个人。<br><br>
+        学生们说，这些树无论怎样修剪都不会弯曲。有人赞叹它们坚韧，有人在树下许愿，希望自己也能变得不再需要谁。<br><br>
+        只有风穿过树冠时听见里面的回声：<em>所谓绝不受伤，不过是先把能够拥抱、依恋与悲伤的部分全部杀死。树确实不会被抛弃，因为树也再无法走向任何人。</em>`,
+        "mad");
+    });
+  }
+
+  $("#startBtn").onclick=()=>{
+    startAudio();
+    overlay.classList.add("fade");
+    setTimeout(()=>overlay.style.display="none",900);
+    setTimeout(nextIntro,320);
+  };
+
+  window.addEventListener("keydown",e=>{
+    if(e.repeat)return;
+    const k=e.key.toLowerCase();
+    if(k==="a"||e.key==="ArrowLeft")registerStep("L");
+    if(k==="d"||e.key==="ArrowRight")registerStep("R");
+  });
+
+  window.addEventListener("mousedown",e=>{
+    if(e.target.closest("button"))return;
+    if(e.button===0)registerStep("L");
+    if(e.button===2)registerStep("R");
+  });
+
+  window.addEventListener("contextmenu",e=>e.preventDefault());
+
+  touchZones.addEventListener("pointerdown",e=>{
+    const x=e.clientX/window.innerWidth;
+    registerStep(x<.5?"L":"R");
+  });
+})();
+</script>
+</body>
+</html>
