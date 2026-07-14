@@ -94,8 +94,9 @@ function archiveCard(entry) { return `<a class="archive-card" href="${entryUrl(e
 function archiveView() { return `<section class="archive-page section-wrap"><p class="eyebrow">ARCHIVE / ALL ENTRIES</p><h1>Projects & concepts.</h1><div class="archive-grid">${(catalog.entries || []).map(archiveCard).join('')}</div></section>`; }
 
 async function entryView(entry) {
-  let body = '<p>这条内容正在整理中。</p>';
-  try { const response = await fetch(entry.content); if (!response.ok) throw new Error('Content not found'); body = renderMarkdown(await response.text()); } catch { body = '<p>内容暂时无法读取。请在静态服务器或 GitHub Pages 中打开此页面。</p>'; }
+  let markdown = entry.body || '';
+  try { const response = await fetch(entry.content); if (!response.ok) throw new Error('Content not found'); markdown = await response.text(); } catch { /* 详情页仍可使用目录中的正文回退内容。 */ }
+  const body = markdown ? renderMarkdown(markdown) : '<p>这条内容正在整理中。</p>';
   const media = (entry.media || []).map((item) => item.type === 'video' ? `<section class="entry-media"><p class="eyebrow">${escapeHtml(item.title || 'MEDIA')}</p><video controls preload="metadata" src="${escapeHtml(item.src)}"></video></section>` : '').join('');
   const links = (entry.links || []).map((link) => `<a class="button-link" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(link.label)} <span>↗</span></a>`).join('');
   return `<article class="entry-page section-wrap"><a class="back-link" href="#projects">← Back to portfolio</a><header class="entry-header"><p class="eyebrow">${escapeHtml(entry.type)} / ${escapeHtml(entry.date)}</p><h1>${escapeHtml(entry.title)}</h1><p class="entry-summary">${escapeHtml(entry.summary)}</p><div class="tag-list">${tags(entry.tags)}</div></header><img class="entry-cover" src="${escapeHtml(entry.cover)}" alt="${escapeHtml(entry.title)}封面">${entry.interactive ? `<section class="interactive-area"><div><p class="eyebrow">INTERACTIVE EXPERIENCE</p><h2>Enter the work.</h2></div><iframe title="${escapeHtml(entry.title)}互动体验" src="${escapeHtml(entry.interactive)}" loading="lazy"></iframe></section>` : ''}${media}<div class="entry-body">${body}</div>${links ? `<div class="entry-links">${links}</div>` : ''}</article>`;
