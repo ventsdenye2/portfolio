@@ -427,7 +427,7 @@
   const runner=$("#runner"), flowers=$("#flowers"), trees=$("#trees"), quote=$("#quote"), spirit=$("#spiritLayer");
   const touchZones=$("#touchZones");
   let state="intro", branch=null, steps=0, target=108, lastSide=null, lastInput=Date.now(), idleTimer=null;
-  let sceneIndex=0, branchStep=0, locked=false, audio=null, madTree=0, injuries=0, sequenceToken=0, dialogueToken=0, lastStepAt=0, stallWarning=false;
+  let sceneIndex=0, branchStep=0, locked=false, audio=null, madTree=0, injuries=0, sequenceToken=0, dialogueToken=0, lastStepAt=0, stallWarning=false, softDialogueComplete=false, readingGraceUntil=0;
 
   const introLines=[
     ["旁白","知风失恋了。关系并非在某一天骤然折断。它先在一次次索要证明的夜里变薄，最后断在一个双方都回答过太多遍的问题上。","“你到底还爱不爱我？”"],
@@ -437,7 +437,7 @@
   ];
 
   const softScenes=[
-    ["野花","她每次说爱你，那句话能在你心里活多久？","花被风压低，像是并不急着得到回答。"],
+    ["野花","她每次说爱你，那句话能在你心里活多久？","花被风压低，像是并不急着得到回答。它曾经也穿着跑鞋，在同一排路灯下等过一个非来不可的答案。"],
     ["知风","有时一晚，有时只有几分钟。可她开口的时候，房间里那个声音确实会安静。",""],
     ["野花","于是你把她留在一只漏水的杯子旁，请她不停往里添水。你不是故意折磨她；你只是从未相信，杯子也可以由自己慢慢修补。",""],
     ["知风","可最后确实是我把一切弄坏了。",""],
@@ -450,7 +450,8 @@
     ["野花","它留下了伤口，也留下伤口的形状。你终于看清，自己最怕的并不是失去她，而是她离开以后，连你也站到她那一边，一起把自己丢下。",""],
     ["知风","可我现在还是不知道为什么要跑。",""],
     ["野花","那就暂时不要为了什么。意义并不总在起点举着旗子等人；有时人先穿过这一夜，天亮后才发现，脚印替他保住了一个没有在半路消失的自己。",""],
-    ["旁白","花没有治好知风，也没有保证下一段爱会更容易。它只是把他一直交给别人的问题，轻轻放回他的手里：当没有谁为你的存在作证，你是否还肯陪自己走完余下的路？",""]
+    ["野花","我没有做到。许多个夜晚以前，我也站在这里，等一句足以让我继续的回答。等得太久，脚便生了根，人便缩成了花。","风一吹，你听见的每一朵花都曾有过人的名字，都曾穿着跑鞋经过这里。它们不是天生懂得劝慰，只是已经目送过太多人走到自己当年的岔路口。"],
+    ["旁白","花没有治好知风，也没有保证下一段爱会更容易。它只是把自己未能走完的那一步交给他，也把那个一直被他交给别人的问题轻轻放回他的手里：当没有谁为你的存在作证，你是否还肯陪自己走完余下的路？",""]
   ];
 
   const madTaunts=[
@@ -490,15 +491,17 @@
     speaker.textContent=spk;
     text.textContent=body;
     subtext.textContent=sub;
+    readingGraceUntil=Math.max(readingGraceUntil,Date.now()+readingDuration(`${spk}${body}${sub}`,3600,10000));
     choices.innerHTML="";
     return dialogueToken;
   }
 
   function hideDialogue(delay=0){
     const token=dialogueToken;
+    const readableDelay=readingDuration(`${speaker.textContent}${text.textContent}${subtext.textContent}`,3600,10000);
     setTimeout(()=>{
       if(token===dialogueToken) panel.classList.add("hidden");
-    },delay);
+    },Math.max(delay,readableDelay));
   }
 
   function setRunHint(message){
@@ -523,7 +526,14 @@
     hint.innerHTML=hint.dataset.normal||"继续交替奔跑";
   }
 
-  function showQuote(message,duration=2300){
+  function readingDuration(message,min=3000,max=9000){
+    const characters=String(message||"").replace(/\s/g,"").length;
+    return Math.max(min,Math.min(max,1700+characters*90));
+  }
+
+  function showQuote(message,duration=0){
+    duration=Math.max(duration,readingDuration(message,2800,7600));
+    readingGraceUntil=Math.max(readingGraceUntil,Date.now()+duration);
     quote.classList.remove("narrativePulse");
     quote.textContent=message;
     void quote.offsetWidth;
@@ -536,14 +546,17 @@
     let elapsed=0;
     items.forEach(item=>{
       elapsed+=item.delay||0;
+      const narrativeText=item.quote||(item.dialogue?item.dialogue.join(""):"");
+      const readableHold=readingDuration(narrativeText,item.dialogue?3600:3000,item.dialogue?10000:8000);
+      const hold=Math.max(item.hold||0,readableHold);
       setTimeout(()=>{
         if(token!==sequenceToken)return;
-        if(item.quote)showQuote(item.quote,item.duration||2400);
+        if(item.quote)showQuote(item.quote,Math.max(item.duration||0,hold-120));
         if(item.dialogue)setDialogue(...item.dialogue);
         if(item.hide)panel.classList.add("hidden");
         if(item.action)item.action();
       },elapsed);
-      elapsed+=item.hold||0;
+      elapsed+=hold;
     });
     setTimeout(()=>{ if(token===sequenceToken&&onDone)onDone(); },elapsed+120);
   }
@@ -628,6 +641,11 @@
     idleTimer=setInterval(()=>{
       if(locked)return;
       if(!["run","softRun","madRun"].includes(state))return;
+      if(Date.now()<readingGraceUntil){
+        lastInput=Date.now();
+        leaveStallWarning();
+        return;
+      }
       const elapsed=Date.now()-lastInput;
       const warningAt=state==="madRun"?3000:3600;
       const endingAt=state==="madRun"?5900:6900;
@@ -647,6 +665,7 @@
     runner.classList.add("weary");
     hud.style.opacity=".28";
     hint.style.opacity="0";
+    panel.classList.add("hidden");
     breath.textContent="呼吸：脚步声已经停了";
     runSequence([
       {quote:"知风没有倒下。他只是没有把另一只脚送出去。第一秒里，这甚至不像一个决定。",hold:2500},
@@ -670,13 +689,13 @@
         flowers.appendChild(f);
         requestAnimationFrame(()=>f.style.opacity="1");
       },quote:"膝盖向泥土弯去，脊背缩成一根细茎；他最后留下的，是一个无人听见的吸气。",hold:3400},
-      {dialogue:["旁白","天亮以前，知风成为路边一朵没有品种的花。清晨的学生从他身旁经过，没有人知道这里曾站着一个不知为何继续的人。","后来每逢深夜，他都注视那些失恋后跑过教学区的人。"],hold:3900},
+      {dialogue:["旁白","天亮以前，知风成为路边一朵没有品种的花，挨着那些曾经和他一样在夜里寻找答案的人。清晨的学生从旁经过，不会知道这一小片花丛曾有各自的姓名。","后来每逢深夜，他都和它们一起注视那些失恋后跑过教学区的人。"],hold:3900},
       {hide:true,quote:"他想对他们说：可以停一会儿。只是别一直等着世界先给出理由，才肯把下一步还给自己。",hold:3000}
     ],()=>{
       typeEnding("第三结局：路旁之花",
         `知风听见过花，也可能举起过那把并不存在的刀；可无论理解还是癫狂，都尚未来得及在他身上完成。他停在两种去路之间，等待一个足以替自己作出下一步的理由。<br><br>
         理由没有从夜色里走来。等待却先长出根须，把他的脚踝、姓名和未完成的人生一并固定在路旁。<br><br>
-        从此，他看见许多人带着相似的神情经过：有人哭着跑远，有人喘息后重新迈步，也有人在他身旁停得太久。风吹来时，他拼命摇晃花冠，想告诉他们——<em>停歇可以是一段动作，却不该被误认成一种命运；没有答案时迈出的半步，也仍然属于自己。</em>`,
+        从此，他成了花丛中的一个新声音。身旁每一朵花都曾有过姓名，都曾在相似的夜里等待世界先给出继续的理由。后来又有许多人带着相似的神情经过：有人哭着跑远，有人喘息后重新迈步，也有人在他们身旁停得太久。风吹来时，花丛便一起摇晃，想告诉他们——<em>停歇可以是一段动作，却不该被误认成一种命运；没有答案时迈出的半步，也仍然属于自己。</em>`,
         "flower");
     });
   }
@@ -742,16 +761,18 @@
     clearInterval(idleTimer);
     $("#passerby").style.opacity="0";
     world.classList.add("shake");
-    showQuote("风从封闭的操场方向吹来。等知风再抬头，路上一个人影也没有。",2800);
+    const encounterLine="风从封闭的操场方向吹来。等知风再抬头，路上一个人影也没有。";
+    const encounterDelay=readingDuration(encounterLine,3000,7600);
+    showQuote(encounterLine,encounterDelay);
     setTimeout(()=>world.classList.remove("shake"),300);
     setTimeout(()=>{
-      setDialogue("路边的野花","累了吗？","花蔫着，像一个同样熬过许多夜晚、因而不急着同情任何人的旁观者。");
+      setDialogue("路边的野花","累了吗？","花蔫着，像一个同样熬过许多夜晚、因而不急着同情任何人的旁观者。知风还不知道，它曾经也有人的名字。");
       choices.innerHTML=`
         <button class="choice" id="talk">停下辩解，听花说完</button>
         <button class="choice" id="refuse">不需要怜悯，继续跑</button>`;
       $("#talk").onclick=()=>chooseSoft();
       $("#refuse").onclick=()=>chooseMad();
-    },2600);
+    },encounterDelay+180);
   }
 
   function chooseSoft(){
@@ -764,6 +785,10 @@
     setRunHint("继续交替奔跑<br>让对话发生在脚步之间");
     lastInput=Date.now();
     startIdle();
+    runSequence(softScenes.map(dialogue=>({dialogue})),()=>{
+      softDialogueComplete=true;
+      maybeFinishSoft();
+    });
   }
 
   function chooseMad(){
@@ -792,14 +817,12 @@
     });
   }
 
+  function maybeFinishSoft(){
+    if(state==="softRun"&&softDialogueComplete&&branchStep>=softScenes.length*10+3)startSoftEnding();
+  }
+
   function softAdvance(){
-    const idx=Math.floor((branchStep-1)/10);
-    if(branchStep>0&&branchStep%10===0&&idx<softScenes.length){
-      const s=softScenes[idx];
-      setDialogue(...s);
-      hideDialogue(2700);
-    }
-    if(branchStep>=softScenes.length*10+3)startSoftEnding();
+    maybeFinishSoft();
   }
 
   function startSoftEnding(){
@@ -854,8 +877,8 @@
       }
     }
     if(branchStep===40){
-      flowers.innerHTML="";
-      showQuote("最后一朵花倒下后，知风以为世界终于安静。紧接着，路旁的树发出了更低、更厚的笑声。",2700);
+      startTreeChallenge();
+      return;
     }
     if(branchStep>40&&branchStep%7===0&&madTree<6){
       madTree++;
@@ -865,6 +888,30 @@
       organWord(wounds[injuries-1]);
     }
     if(branchStep>=84)startMadEnding();
+  }
+
+  function startTreeChallenge(){
+    state="madTreeTaunt";
+    locked=true;
+    clearInterval(idleTimer);
+    flowers.innerHTML="";
+    runSequence([
+      {action:()=>{
+        for(let i=0;i<3;i++){
+          madTree++;
+          spawnTree(.05);
+        }
+      },quote:"最后一朵花倒下后，知风以为世界终于安静。紧接着，路旁那些始终沉默的树发出了更低、更厚的笑声。"},
+      {dialogue:["老树","这就是你的坚强？把不会还手的花全砍倒，再把满地的柔软叫作胜利。","树皮一层层裂开，露出的纹路像许多张忍住哭声的嘴。"]},
+      {dialogue:["老树","你仍旧脆弱。你只敢欺负比自己更弱小的东西，却连抬头看一眼真正坚硬之物都不敢。","我们也曾和你一样在这条路上奔跑。后来我们杀死了所有会疼、会依恋的部分，才长成你眼里的坚硬。"]},
+      {hide:true,quote:"知风的笑声停了一瞬。他无法忍受树替自己说出“脆弱”。于是他抬起刀，第一次把刀锋转向树干。直到此刻，他才开始砍树。"}
+    ],()=>{
+      state="madRun";
+      locked=false;
+      setRunHint("继续交替奔跑<br>这一次，他把每一步想象成砍向树干的一刀");
+      lastInput=Date.now();
+      startIdle();
+    });
   }
 
   function startMadEnding(){
@@ -879,13 +926,13 @@
       {action:()=>{for(let i=0;i<5;i++)setTimeout(()=>{madTree++;spawnTree(.15)},i*220);},quote:"树一棵接一棵站到路中央。它们没有追赶他，只是等待他把自己送上来。",hold:3400},
       {action:()=>runner.classList.add("fallen"),quote:"最后一刀砍下时，刀没有进入树干。树干进入了他的手腕、肩膀、胸腔，沿着血管长出年轮。",hold:3600},
       {dialogue:["旁白","知风倒在路上，却仍在笑。他宣布自己终于不再需要任何人。","蝉于是把笑声缝进他的耳膜；路灯俯下身饮他的影子；教学楼逐层张开黑色的窗，像无数没有眼珠的眼睛。"],hold:4300},
-      {hide:true,quote:"周围的生灵嗤笑他的癫狂，也敬重他的癫狂。它们分食他的骨肉，用来长出更坚硬、更沉默的东西。",hold:3600}
+      {hide:true,quote:"知风终于倒下。皮肤在泥土上变厚，血管收紧成年轮；那些曾经也和他一样奔跑过的老树停止嘲笑，看着又一个人加入这片坚硬的沉默。",hold:3600}
     ],()=>{
       typeEnding("第二结局：不弯之林",
-        `天亮以后，清洁工没有在路上发现尸体。那里只多出一排昨夜还不存在的树。<br><br>
-        腕骨成了最浅的根，肋骨在枝头围成空鸟巢，肝脏凝作琥珀色树脂，肺叶则彻底木质化，在风中发出沙哑的呼吸。后来已分不清是知风挥动过刀，还是那把刀借他的身体砍完了一个人。<br><br>
-        学生们说，这些树无论怎样修剪都不会弯曲。有人赞叹它们坚韧，有人在树下许愿，希望自己也能变得不再需要谁。<br><br>
-        只有风穿过树冠时听见里面的回声：<em>所谓绝不受伤，不过是先把能够拥抱、依恋与悲伤的部分全部杀死。树确实不会被抛弃，因为树也再无法走向任何人。</em>`,
+        `天亮以后，清洁工没有在路上发现尸体。那些老树之间，只多出一棵昨夜还不存在的树。<br><br>
+        腕骨成了最浅的根，肋骨在枝头围成空鸟巢，肝脏凝作琥珀色树脂，肺叶则彻底木质化，在风中发出沙哑的呼吸。知风砍向树的最后一刀没能让坚硬屈服，反而沿着他的身体完成了最后一次砍伐：把一个会痛、会需要、会走向别人的人，砍成了不会弯曲的木头。<br><br>
+        路旁的老树认出了他。它们也都曾是和知风相似的人，也都曾把“不再受伤”错认成“变得强大”。如今知风成为它们之中最新、最沉默的一棵。学生们赞叹这些树坚韧，也有人在树下许愿，希望自己能变得不再需要谁。<br><br>
+        只有风穿过树冠时听见许多人的回声：<em>所谓绝不受伤，不过是先把能够拥抱、依恋与悲伤的部分全部杀死。树确实不会被抛弃，因为树也再无法走向任何人。</em>`,
         "mad");
     });
   }
