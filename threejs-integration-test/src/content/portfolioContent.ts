@@ -115,6 +115,7 @@ export const portfolioContent = {
   ] satisfies PortfolioProject[],
   conceptLab: [
     {
+      slug: "ghostfont",
       title: "GHOSTFONT / 幽灵字体",
       summary: "视觉合规工程师林默在旧录像中发现失踪姐姐留下的 GhostFont，并必须决定人类应如何重新取得自由。",
       tags: ["AI 治理", "互动叙事", "选择后果"],
@@ -122,6 +123,7 @@ export const portfolioContent = {
       link: "/content/entries/ghostfont/interactive.html",
     },
     {
+      slug: "zhifeng-night-run",
       title: "知风夜跑",
       summary: "在一条校园夜路上交替迈步；当意义暂时缺席，行动本身是否仍能带人继续向前？",
       tags: ["互动叙事", "夜跑", "多结局"],
@@ -130,6 +132,8 @@ export const portfolioContent = {
     },
   ],
 } as const;
+
+export type CreativityEntry = (typeof portfolioContent.conceptLab)[number];
 
 export function getModuleContent(state: PortfolioState) {
   if (state === "personalIntro") return portfolioContent.personalIntro;

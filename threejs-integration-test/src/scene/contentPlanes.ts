@@ -19,8 +19,14 @@ function makeScreenContentMaterial(
     opacity: source.opacity,
     alphaTest: sourceWithAlpha.alphaTest ?? 0,
     side: source.side,
-    depthTest: true,
-    depthWrite: true,
+    // Keep the authored content-plane depth settings. These planes sit almost
+    // flush with their display shells, so dropping polygonOffset here causes
+    // the replacement texture to lose the depth fight against the shell.
+    depthTest: source.depthTest,
+    depthWrite: source.depthWrite,
+    polygonOffset: sourceWithAlpha.polygonOffset,
+    polygonOffsetFactor: sourceWithAlpha.polygonOffsetFactor,
+    polygonOffsetUnits: sourceWithAlpha.polygonOffsetUnits,
     toneMapped: false,
   });
   material.userData.isContentMaterial = true;
@@ -70,6 +76,34 @@ export function setPersonalIntroPhotoTexture(root: THREE.Object3D, texture: THRE
       return material;
     }
     return makeScreenContentMaterial(material, texture, "MAT_PersonalIntro_Photo");
+  });
+  mesh.material = contentMaterials.length === 1 ? contentMaterials[0] : contentMaterials;
+  return true;
+}
+
+/** Replace only the Creativity screen preview map; the monitor geometry and authored transform stay unchanged. */
+export function setCreativityScreenTexture(root: THREE.Object3D, texture: THREE.Texture): boolean {
+  const object = root.getObjectByName("Creativity_Screen");
+  if (!object || !(object as THREE.Mesh).isMesh) return false;
+
+  const mesh = object as THREE.Mesh;
+  mesh.userData.isContentPlane = true;
+  mesh.userData.contentPlaneRole = "Creativity_Screen";
+  mesh.visible = true;
+  mesh.frustumCulled = false;
+  mesh.castShadow = false;
+  mesh.receiveShadow = false;
+
+  const sourceMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  const contentMaterials = sourceMaterials.map((material) => {
+    if (material.userData.isContentMaterial && material instanceof THREE.MeshBasicMaterial) {
+      material.map = texture;
+      material.color.set(0xffffff);
+      material.toneMapped = false;
+      material.needsUpdate = true;
+      return material;
+    }
+    return makeScreenContentMaterial(material, texture, "MAT_Creativity_Screen_Content");
   });
   mesh.material = contentMaterials.length === 1 ? contentMaterials[0] : contentMaterials;
   return true;

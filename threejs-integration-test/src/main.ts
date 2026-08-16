@@ -17,7 +17,7 @@ import {
   type LoadedPortfolioScene,
 } from "./scene/loadPortfolioScene";
 import { FloatingObjectsController } from "./scene/floatingObjects";
-import { setPersonalIntroPhotoTexture, setProjectsScreenTexture } from "./scene/contentPlanes";
+import { setCreativityScreenTexture, setPersonalIntroPhotoTexture, setProjectsScreenTexture } from "./scene/contentPlanes";
 import { TerminalController } from "./terminal/TerminalController";
 import { NPRManager, type NPRRootController, CONTENT_PLANE_NAMES } from "./npr/NPRManager";
 import { DepthOfFieldController } from "./effects/depthOfField";
@@ -270,6 +270,40 @@ const portfolioProjectFallbackTextures = portfolioContent.projects.map((project,
 ));
 const portfolioProjectTextures: Array<THREE.Texture | null> = portfolioContent.projects.map(() => null);
 let activeProjectScreen: "a" | "b" = "a";
+const creativityPreviewTextures = new Map<string, THREE.Texture>();
+let creativityPreviewRequest = 0;
+
+async function loadCreativityCoverTexture(url: string): Promise<THREE.CanvasTexture> {
+  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const element = new Image();
+    element.decoding = "async";
+    element.onload = () => resolve(element);
+    element.onerror = () => reject(new Error(`Could not load creativity cover: ${url}`));
+    element.src = url;
+  });
+
+  // Rasterize SVG covers once before uploading them to WebGL. This keeps the
+  // interactive preview independent of browser-specific SVG texture support.
+  const canvas = document.createElement("canvas");
+  canvas.width = 1600;
+  canvas.height = 1000;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Could not create creativity cover canvas.");
+  context.fillStyle = "#080b10";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.flipY = false;
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+  texture.needsUpdate = true;
+  return texture;
+}
 
 function createProjectScreenTexture(label: string, background: string, accent: string): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
@@ -374,6 +408,26 @@ async function loadPersonalIntroPhotoTexture(): Promise<void> {
     console.log("[Personal Intro] loaded pic01.png into PersonalIntro_Photo");
   } catch (error) {
     console.warn("[Personal Intro] could not load /content-media/pic01.png; keeping the existing photo material.", error);
+  }
+}
+
+async function previewCreativityEntry(entrySlug: string): Promise<void> {
+  const entry = portfolioContent.conceptLab.find((item) => item.slug === entrySlug);
+  if (!entry || !loadedPortfolio) return;
+  const requestId = ++creativityPreviewRequest;
+  let texture = creativityPreviewTextures.get(entry.slug);
+  if (!texture) {
+    try {
+      texture = await loadCreativityCoverTexture(entry.cover);
+      creativityPreviewTextures.set(entry.slug, texture);
+    } catch (error) {
+      console.warn(`[Creativity] could not load ${entry.cover}`, error);
+      return;
+    }
+  }
+  if (requestId !== creativityPreviewRequest || !loadedPortfolio) return;
+  if (setCreativityScreenTexture(loadedPortfolio.scene, texture)) {
+    setStatus(`Creativity preview synced: ${entry.title}`, "success");
   }
 }
 
@@ -829,19 +883,24 @@ function setContentPlaneHighlights(enabled: boolean): void {
 
 function adjustPersonalIntroState(state: CameraState): CameraState {
   if (!state.target) return { ...state };
-  // Keep the authored Target and viewing direction unchanged. Only move the
-  // camera a modest amount toward that original target for a closer portrait.
-  // Move closer while keeping the authored target unchanged. The slightly
-  // stronger vertical approach reduces the previous top-down feeling and
-  // brings the camera nearer to the photo's eye level.
-  const approachFactor = 0.42;
-  const verticalApproachFactor = 0.58;
+  // Aim at the authored photo plane center rather than the broader intro
+  // target. Values stay in the source Blender basis because the camera
+  // controller applies the Blender -> Three conversion afterwards.
+  const photoTarget = {
+    x: -2.011593,
+    y: -3.647516,
+    z: 0.978914,
+  };
+  // Move closer while bringing the camera nearer to the photo's eye level.
+  const approachFactor = 0.62;
+  const verticalApproachFactor = 0.8;
   return {
     ...state,
+    target: photoTarget,
     position: {
-      x: state.position.x + (state.target.x - state.position.x) * approachFactor,
-      y: state.position.y + (state.target.y - state.position.y) * approachFactor,
-      z: state.position.z + (state.target.z - state.position.z) * verticalApproachFactor,
+      x: state.position.x + (photoTarget.x - state.position.x) * approachFactor,
+      y: state.position.y + (photoTarget.y - state.position.y) * approachFactor,
+      z: state.position.z + (photoTarget.z - state.position.z) * verticalApproachFactor,
     },
   };
 }
@@ -859,9 +918,10 @@ function prepareCameraData(statesFile: CameraStatesFile, transitionsFile: Camera
     };
   });
   console.log("[Camera] personalIntro code-level approach", JSON.stringify({
-    approachFactor: 0.42,
-    verticalApproachFactor: 0.58,
-    targetChanged: false,
+    approachFactor: 0.62,
+    verticalApproachFactor: 0.8,
+    targetChanged: true,
+    target: adjustedPersonalIntro.target,
     originalPosition: statesFile.states.personalIntro.position,
     adjustedPosition: adjustedPersonalIntro.position,
     transitionUpdated: adjustedTransitions.some((transition) => transition.name === "PersonalIntro_to_TechStack" && transition.keyframes[0].position.x !== statesFile.states.personalIntro.position.x),
@@ -952,11 +1012,12 @@ async function navigateTo(stateName: MainState): Promise<boolean> {
   return success;
 }
 
-async function enterCreativityCloseup(): Promise<boolean> {
+async function enterCreativityCloseup(entrySlug?: string): Promise<boolean> {
   if (!cameraController) return false;
+  const entry = entrySlug ? portfolioContent.conceptLab.find((item) => item.slug === entrySlug) : undefined;
   syncActiveNprModule("creativityCloseup");
   setDofFocusForState("creativityCloseup");
-  setStatus("Entering Creativity CloseUp…");
+  setStatus(entry ? `Entering Creativity CloseUp · ${entry.title}…` : "Entering Creativity CloseUp…");
   const success = await cameraController.enterCreativityCloseup();
   updateDebugPanel();
   setStatus(success ? "Creativity CloseUp entered" : "Enter blocked: select Creativity Base first", success ? "success" : "error");
@@ -1303,6 +1364,7 @@ async function bootstrap(): Promise<void> {
       navigateTo,
       enterCreativityCloseup,
       exitCreativityCloseup,
+      previewCreativityEntry: (entrySlug) => void previewCreativityEntry(entrySlug),
       setProjectIndex: applyPortfolioProjectTexture,
     });
     portfolioUi.bind();

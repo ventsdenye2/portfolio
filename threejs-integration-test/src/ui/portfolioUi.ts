@@ -1,5 +1,11 @@
 import type { DetailState, MainState } from "../camera/cameraTypes";
-import { getModuleContent, portfolioContent, type PortfolioProject, type PortfolioState } from "../content/portfolioContent";
+import {
+  getModuleContent,
+  portfolioContent,
+  type CreativityEntry,
+  type PortfolioProject,
+  type PortfolioState,
+} from "../content/portfolioContent";
 
 const NAV_STATES: MainState[] = ["personalIntro", "techStack", "projects", "creativityBase", "moreInterests"];
 const STATE_LABELS: Record<PortfolioState, string> = {
@@ -19,8 +25,9 @@ export interface PortfolioUiSnapshot {
 
 export interface PortfolioUiCallbacks {
   navigateTo: (state: MainState) => Promise<boolean>;
-  enterCreativityCloseup: () => Promise<boolean>;
+  enterCreativityCloseup: (entrySlug?: string) => Promise<boolean>;
   exitCreativityCloseup: () => Promise<boolean>;
+  previewCreativityEntry: (entrySlug: string) => void;
   setProjectIndex: (index: number) => void;
 }
 
@@ -42,9 +49,13 @@ export class PortfolioUi {
   private readonly title = document.querySelector<HTMLElement>("#module-title");
   private readonly subtitle = document.querySelector<HTMLElement>("#module-subtitle");
   private readonly body = document.querySelector<HTMLElement>("#module-body");
+  private readonly creativityShowcase = document.querySelector<HTMLElement>("#creativity-showcase");
   private readonly timeline = document.querySelector<HTMLElement>("#module-timeline");
   private readonly tags = document.querySelector<HTMLElement>("#module-tags");
   private readonly actions = document.querySelector<HTMLElement>("#module-actions");
+  private readonly creativityExperience = document.querySelector<HTMLElement>("#creativity-experience");
+  private readonly creativityExperienceFrame = document.querySelector<HTMLIFrameElement>("#creativity-experience-frame");
+  private readonly creativityExperienceTitle = document.querySelector<HTMLElement>("#experience-title");
   private readonly status = document.querySelector<HTMLElement>("#ui-status");
   private readonly brandCaption = document.querySelector<HTMLElement>("#brand-caption");
   private readonly introTypewriter = document.querySelector<HTMLElement>("#intro-typewriter");
@@ -70,6 +81,8 @@ export class PortfolioUi {
   private introManifestoPlayed = false;
   private renderedMainState: MainState | undefined;
   private renderedDetailState: DetailState | undefined;
+  private selectedCreativitySlug: string = portfolioContent.conceptLab[0]?.slug ?? "";
+  private closeupExperienceVisible = false;
 
   constructor(callbacks: PortfolioUiCallbacks) {
     this.callbacks = callbacks;
@@ -96,6 +109,26 @@ export class PortfolioUi {
       if (action === "goto-intro") void this.goTo("personalIntro");
       if (action === "enter-closeup") void this.enterCloseup();
       if (action === "exit-closeup") void this.exitCloseup();
+    });
+    this.creativityShowcase?.addEventListener("click", (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLElement>("[data-creativity-entry]");
+      if (!target) return;
+      const entrySlug = target.dataset.creativityEntry;
+      if (entrySlug) void this.enterCloseup(entrySlug);
+    });
+    this.creativityShowcase?.addEventListener("pointerover", (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLElement>("[data-creativity-entry]");
+      const entrySlug = target?.dataset.creativityEntry;
+      if (entrySlug) this.previewCreativityEntry(entrySlug);
+    });
+    this.creativityShowcase?.addEventListener("focusin", (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLElement>("[data-creativity-entry]");
+      const entrySlug = target?.dataset.creativityEntry;
+      if (entrySlug) this.previewCreativityEntry(entrySlug);
+    });
+    this.creativityExperience?.addEventListener("click", (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLElement>("[data-experience-action]");
+      if (target?.dataset.experienceAction === "exit") void this.exitCloseup();
     });
     window.addEventListener("wheel", (event) => {
       if (event.target instanceof HTMLElement && event.target.closest("#module-panel")) return;
@@ -147,6 +180,7 @@ export class PortfolioUi {
     if (this.interactionLocked || state === this.currentSnapshot.mainState && this.currentSnapshot.detailState === "base") return;
     const previousSnapshot = this.currentSnapshot;
     this.interactionLocked = true;
+    if (this.currentSnapshot.detailState === "closeup" || this.closeupExperienceVisible) this.hideCloseupExperience();
     const pendingSnapshot: PortfolioUiSnapshot = {
       mainState: state,
       detailState: "base",
@@ -163,19 +197,57 @@ export class PortfolioUi {
     }
   }
 
-  private async enterCloseup(): Promise<void> {
+  private async enterCloseup(entrySlug = this.selectedCreativitySlug): Promise<void> {
     if (this.interactionLocked || this.currentSnapshot.mainState !== "creativityBase" || this.currentSnapshot.detailState === "closeup") return;
+    const entry = portfolioContent.conceptLab.find((item) => item.slug === entrySlug);
+    if (!entry) return;
+    this.selectedCreativitySlug = entry.slug;
     this.interactionLocked = true;
-    const success = await this.callbacks.enterCreativityCloseup();
+    this.setCloseupPanelHidden(true);
+    const success = await this.callbacks.enterCreativityCloseup(entry.slug);
     this.interactionLocked = false;
-    if (!success) this.setStatus("Creativity CloseUp is available from the base view.");
+    if (success) this.showCloseupExperience(entry);
+    else {
+      this.setCloseupPanelHidden(false);
+      this.setStatus("Creativity CloseUp is available from the base view.");
+    }
   }
 
   private async exitCloseup(): Promise<void> {
     if (this.interactionLocked || this.currentSnapshot.detailState !== "closeup") return;
     this.interactionLocked = true;
+    this.hideCloseupExperience(false);
     await this.callbacks.exitCreativityCloseup();
     this.interactionLocked = false;
+  }
+
+  private previewCreativityEntry(entrySlug: string): void {
+    const entry = portfolioContent.conceptLab.find((item) => item.slug === entrySlug);
+    if (!entry) return;
+    this.selectedCreativitySlug = entry.slug;
+    this.callbacks.previewCreativityEntry(entry.slug);
+  }
+
+  private setCloseupPanelHidden(hidden: boolean): void {
+    this.panel?.classList.toggle("is-closeup-hidden", hidden);
+  }
+
+  private showCloseupExperience(entry: CreativityEntry): void {
+    if (!this.creativityExperience || !this.creativityExperienceFrame) return;
+    this.setCloseupPanelHidden(true);
+    if (this.creativityExperienceTitle) this.creativityExperienceTitle.textContent = entry.title;
+    if (this.creativityExperienceFrame.src !== new URL(entry.link, window.location.href).href) {
+      this.creativityExperienceFrame.src = entry.link;
+    }
+    this.creativityExperience.hidden = false;
+    this.closeupExperienceVisible = true;
+  }
+
+  private hideCloseupExperience(restorePanel = true): void {
+    if (this.creativityExperienceFrame) this.creativityExperienceFrame.src = "about:blank";
+    if (this.creativityExperience) this.creativityExperience.hidden = true;
+    this.closeupExperienceVisible = false;
+    this.setCloseupPanelHidden(!restorePanel);
   }
 
   private changeProject(delta: number): void {
@@ -209,12 +281,18 @@ export class PortfolioUi {
     this.body.innerHTML = project
       ? `<p>${escapeHtml(project.summary)}</p><p class="project-detail">${escapeHtml(project.status)} · ${escapeHtml(project.date)} · ${escapeHtml(project.format)}</p>`
       : `<p>${escapeHtml(content.body)}</p><p class="module-detail">${escapeHtml(isCloseup ? "显示器已进入近景状态；返回后可继续浏览其他模块。" : content.detail)}</p>`;
+    if (this.creativityShowcase) {
+      const showShowcase = state === "creativityBase" && !isCloseup;
+      this.creativityShowcase.hidden = !showShowcase;
+      this.creativityShowcase.innerHTML = showShowcase ? this.renderCreativityShowcase() : "";
+    }
     this.timeline.hidden = !isIntro;
     this.timeline.innerHTML = isIntro ? this.renderExperienceTimeline() : "";
     const tags = project?.tags ?? content.tags;
     this.tags.innerHTML = tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("");
     this.actions.innerHTML = this.renderActions(snapshot, project);
     this.panel.classList.toggle("is-intro", isIntro);
+    this.setCloseupPanelHidden(isCloseup || this.closeupExperienceVisible);
     if (this.brandCaption) this.brandCaption.hidden = isIntro;
     if (this.introTypewriter) this.introTypewriter.hidden = !isIntro;
     if (isIntro) this.startTypewriter();
@@ -233,6 +311,10 @@ export class PortfolioUi {
 
   private renderExperienceTimeline(): string {
     return `<div class="timeline-heading"><span class="timeline-rule"></span><span>EXPERIENCE / SELECTED WORK</span></div><ol>${portfolioContent.personalIntro.experienceTimeline.map((entry) => `<li class="experience-item"><time>${escapeHtml(entry.period)}</time><div><strong>${escapeHtml(entry.title)}</strong><p>${escapeHtml(entry.detail)}</p></div></li>`).join("")}</ol>`;
+  }
+
+  private renderCreativityShowcase(): string {
+    return `<div class="creativity-showcase-heading"><span class="timeline-rule"></span><span>INTERACTIVE WORKS / HOVER TO PREVIEW</span></div><div class="creativity-showcase-list">${portfolioContent.conceptLab.map((entry) => `<article class="creativity-entry ${entry.slug === this.selectedCreativitySlug ? "is-selected" : ""}" data-creativity-entry="${escapeHtml(entry.slug)}" tabindex="0"><img class="creativity-entry-cover" src="${escapeHtml(entry.cover)}" alt="${escapeHtml(entry.title)} cover" /><div class="creativity-entry-copy"><p class="creativity-entry-index">${entry.slug === "ghostfont" ? "01" : "02"}</p><h2>${escapeHtml(entry.title)}</h2><p>${escapeHtml(entry.summary)}</p><div class="creativity-entry-tags">${entry.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div><button type="button" class="creativity-entry-open" data-creativity-entry="${escapeHtml(entry.slug)}">Enter CloseUp <span>↗</span></button></div></article>`).join("")}</div>`;
   }
 
   private startIntroManifesto(): void {
@@ -356,7 +438,7 @@ export class PortfolioUi {
       return `<div class="project-controls"><button class="ui-action ui-action-secondary" type="button" data-ui-action="prev-project">← Prev</button><span>${String(this.currentProjectIndex + 1).padStart(2, "0")} / ${String(portfolioContent.projects.length).padStart(2, "0")}</span><button class="ui-action ui-action-secondary" type="button" data-ui-action="next-project">Next →</button></div>${link}`;
     }
     if (snapshot.mainState === "creativityBase") {
-      return `<button class="ui-action ui-action-primary" type="button" data-ui-action="enter-closeup">View CloseUp <span>↗</span></button>`;
+      return `<span class="module-action-hint">Hover a work to preview it on the monitor · click to enter CloseUp</span>`;
     }
     if (snapshot.mainState === "personalIntro" || snapshot.mainState === "techStack") {
       return `<button class="ui-action ui-action-primary" type="button" data-ui-action="goto-projects">Explore Projects <span>→</span></button>`;
