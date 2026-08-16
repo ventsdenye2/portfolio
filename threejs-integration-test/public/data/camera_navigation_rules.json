@@ -1,0 +1,33 @@
+{
+  "version": "v1",
+  "states": [
+    "personalIntro",
+    "techStack",
+    "projects",
+    "creativityBase",
+    "creativityCloseup",
+    "moreInterests"
+  ],
+  "rules": {
+    "creativityCloseup": {
+      "allowedDirectReturn": "creativityBase",
+      "mustReturnToBaseBeforeOtherModule": true,
+      "forbiddenDirectTransitions": [
+        "techStack",
+        "projects",
+        "moreInterests",
+        "personalIntro"
+      ]
+    },
+    "mainNavigationOrder": [
+      "personalIntro",
+      "techStack",
+      "projects",
+      "creativityBase",
+      "moreInterests"
+    ],
+    "closeupEntry": "creativityBase -> creativityCloseup",
+    "closeupExit": "creativityCloseup -> creativityBase -> requestedMainModule"
+  },
+  "sourceBlend": "D:\\portfolio\\portfolio\\portfolio_visual_master_v6.blend"
+}

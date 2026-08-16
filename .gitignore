@@ -10,3 +10,43 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+### Local tooling and agent metadata
+/.agents/
+/.codex/
+blender-mcp/
+
+### Blender working files and backups
+*.blend
+*.blend1
+
+### Generated root-level exports, reports, previews and debug captures
+/exports/
+/references/
+/camera_navigation_rules.json
+/camera_states.json
+/camera_transitions.json
+/debug_*.png
+/glb_validation_report*.json
+/plane_alignment_report*.json
+/portfolio_*_report.json
+/portfolio_*_preview.png
+/portfolio_*_workstation_*.png
+/portfolio_*_workstation_monitor.png
+/portfolio_*_kendo_gear.png
+
+### Three.js generated files
+/threejs-integration-test/node_modules/
+/threejs-integration-test/dist/
+/threejs-integration-test/.vite/
+/threejs-integration-test/.playwright-cli/
+/threejs-integration-test/references/
+*.tsbuildinfo
+
+### Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+### Runtime logs
+*.log

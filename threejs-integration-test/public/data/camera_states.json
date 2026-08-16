@@ -1,0 +1,206 @@
+{
+  "version": "v1",
+  "sourceBlend": "D:\\portfolio\\portfolio\\portfolio_visual_master_v6.blend",
+  "orientationPolicy": "rotationEuler/quaternion are derived from the existing camera position and named Target for Three.js lookAt; blenderEvaluatedRotationEuler is retained for audit",
+  "states": {
+    "personalIntro": {
+      "frame": 48,
+      "camera": "Portfolio_Navigation_Camera",
+      "position": {
+        "x": 0.07159,
+        "y": -5.295649,
+        "z": 2.332651
+      },
+      "rotationEuler": {
+        "x": 1.130657,
+        "y": 0.0,
+        "z": 0.796518
+      },
+      "quaternion": {
+        "x": 0.493769,
+        "y": 0.207749,
+        "z": 0.327475,
+        "w": 0.778327
+      },
+      "target": {
+        "x": -1.750069,
+        "y": -3.514059,
+        "z": 1.13265
+      },
+      "targetName": "TARGET_PersonalIntro",
+      "focalLength": 50.0,
+      "fov": 39.597753,
+      "blenderEvaluatedRotationEuler": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    },
+    "techStack": {
+      "frame": 90,
+      "camera": "Portfolio_Navigation_Camera",
+      "position": {
+        "x": -3.188111,
+        "y": -2.552076,
+        "z": 3.4568
+      },
+      "rotationEuler": {
+        "x": 1.121299,
+        "y": 0.0,
+        "z": 0.130448
+      },
+      "quaternion": {
+        "x": 0.530606,
+        "y": 0.034657,
+        "z": 0.0552,
+        "w": 0.845109
+      },
+      "target": {
+        "x": -3.686924,
+        "y": 1.250053,
+        "z": 1.6068
+      },
+      "targetName": "TARGET_TechStack",
+      "focalLength": 52.0,
+      "fov": 38.186984,
+      "blenderEvaluatedRotationEuler": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    },
+    "projects": {
+      "frame": 180,
+      "camera": "Portfolio_Navigation_Camera",
+      "position": {
+        "x": 5.175765,
+        "y": -2.00378,
+        "z": 4.94
+      },
+      "rotationEuler": {
+        "x": 1.095965,
+        "y": -0.0,
+        "z": 0.730489
+      },
+      "quaternion": {
+        "x": 0.486601,
+        "y": 0.186077,
+        "z": 0.304879,
+        "w": 0.797272
+      },
+      "target": {
+        "x": 1.216954,
+        "y": 2.415532,
+        "z": 1.89
+      },
+      "targetName": "TARGET_Projects",
+      "focalLength": 55.0,
+      "fov": 36.24372,
+      "blenderEvaluatedRotationEuler": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    },
+    "creativityBase": {
+      "frame": 270,
+      "camera": "Portfolio_Navigation_Camera",
+      "position": {
+        "x": 6.838463,
+        "y": -1.267436,
+        "z": 2.91449
+      },
+      "rotationEuler": {
+        "x": 1.078306,
+        "y": 0.0,
+        "z": 0.222292
+      },
+      "quaternion": {
+        "x": 0.510241,
+        "y": 0.056946,
+        "z": 0.095183,
+        "w": 0.852849
+      },
+      "target": {
+        "x": 5.893476,
+        "y": 2.913413,
+        "z": 0.61449
+      },
+      "targetName": "TARGET_Creativity",
+      "focalLength": 52.0,
+      "fov": 38.186984,
+      "blenderEvaluatedRotationEuler": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    },
+    "moreInterests": {
+      "frame": 360,
+      "camera": "Portfolio_Navigation_Camera",
+      "position": {
+        "x": 10.026722,
+        "y": -8.260706,
+        "z": 4.077559
+      },
+      "rotationEuler": {
+        "x": 1.20627,
+        "y": 0.0,
+        "z": 0.902388
+      },
+      "quaternion": {
+        "x": 0.510463,
+        "y": 0.247334,
+        "z": 0.359106,
+        "w": 0.741145
+      },
+      "target": {
+        "x": 4.062175,
+        "y": -3.550698,
+        "z": 1.177559
+      },
+      "targetName": "TARGET_MoreInterests",
+      "focalLength": 46.0,
+      "fov": 42.741245,
+      "blenderEvaluatedRotationEuler": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    },
+    "creativityCloseup": {
+      "frame": 36,
+      "camera": "Portfolio_Creativity_CloseUp_Camera",
+      "position": {
+        "x": 6.291895,
+        "y": 1.182006,
+        "z": 1.67957
+      },
+      "rotationEuler": {
+        "x": 1.04754,
+        "y": -0.0,
+        "z": 0.523641
+      },
+      "quaternion": {
+        "x": 0.483104,
+        "y": 0.129458,
+        "z": 0.224139,
+        "w": 0.836429
+      },
+      "target": {
+        "x": 5.31688,
+        "y": 2.870616,
+        "z": 0.554693
+      },
+      "targetName": "TARGET_Creativity_Screen",
+      "focalLength": 50.0,
+      "fov": 39.597753,
+      "blenderEvaluatedRotationEuler": {
+        "x": 1.131275,
+        "y": -0.0,
+        "z": 0.502708
+      },
+      "navigationRule": "must_return_to_creativityBase_before_other_module"
+    }
+  }
+}
