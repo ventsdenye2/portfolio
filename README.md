@@ -1,32 +1,34 @@
-# Ze — Portfolio
+# Kui — Creative Technology Portfolio
 
-这是泽的个人作品集，展示游戏、互动叙事与创意技术实验。正式作品与仍在生长的概念实验会分区呈现。
-
-站点采用纯静态架构：`index.html` 负责页面壳，`assets/` 负责样式与逻辑，`content/` 负责可增量发布的 Markdown 内容和条目索引。新增内容不需要改首页结构，详见 [docs/CONTENT_GUIDE.md](docs/CONTENT_GUIDE.md)。
+当前作品集位于 `threejs-integration-test/`，使用 Three.js、TypeScript、GSAP 和 Vite。目录名沿用早期集成测试阶段的名称，目前承载正式网站。
 
 ## 本地运行
 
 ```bash
-python -m http.server 8000
+cd threejs-integration-test
+npm install
+npm run dev
 ```
 
-打开 <http://localhost:8000/> 即可预览。
+打开 <http://localhost:5173/>。根目录不再包含旧版网站入口。
 
-## 目录结构
+## 构建与部署
 
-```text
-content/
-├── index.json                 # 所有条目的目录索引
-└── entries/
-    └── entry-slug/
-        ├── content.md         # 正文
-        ├── cover.png           # 可选封面
-        └── interactive.html   # 可选可玩版本
-assets/
-├── css/main.css
-└── js/app.js
+在 `threejs-integration-test/` 中运行：
+
+```bash
+npm run build
+npm run preview
 ```
 
-## 发布原则
+构建结果位于 `threejs-integration-test/dist/`，预览地址为 <http://localhost:4173/>。部署时上传 `dist/` 内的文件，不要上传整个仓库。Nginx 配置参考 `threejs-integration-test/deploy/`。
 
-先把一个核心概念做成 3—8 分钟内可以完成的体验，再考虑扩展。作品优先保持静态、可分享、可以在手机和桌面端打开。
+## 目录用途
+
+- `threejs-integration-test/src/`：页面逻辑、样式、3D 场景和交互。
+- `threejs-integration-test/src/content/portfolioContent.ts`：项目列表与个人介绍。
+- `threejs-integration-test/public/`：网站使用的模型、相机配置、项目正文、图片、视频与互动作品。
+- `threejs-integration-test/source-media-originals/legacy/`：旧站留下的原始项目文稿和媒体，仅用于编辑参考，不参与网站构建；该原始素材目录不纳入 Git。
+- 根目录的 Blender 工程、`tools/`、`exports/` 与报告：3D 制作工具和历史制作资料。
+
+旧版 HTML/CSS/JS 网站已移除。历史报告中的旧路径仅记录当时的迁移过程。
