@@ -11,6 +11,7 @@ export interface TerminalTextureOptions {
   cursorInterval?: number;
   maxHistoryLines?: number;
   visibleLineCount?: number;
+  mascot?: "orange-crab";
 }
 
 export interface TerminalTextureMetrics {
@@ -50,6 +51,7 @@ export class TerminalTexture {
   private readonly maxHistoryLines: number;
   private readonly visibleLineCount: number;
   private readonly reducedMotion: boolean;
+  private readonly mascot: TerminalTextureOptions["mascot"];
 
   private historyLines: TerminalLine[] = [];
   private currentEventLines: readonly TerminalLine[] = [];
@@ -84,6 +86,7 @@ export class TerminalTexture {
     this.cursorInterval = options.cursorInterval ?? 620;
     this.maxHistoryLines = options.maxHistoryLines ?? 100;
     this.visibleLineCount = options.visibleLineCount ?? 9;
+    this.mascot = options.mascot;
     this.reducedMotion = typeof window.matchMedia === "function"
       ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
       : false;
@@ -166,7 +169,16 @@ export class TerminalTexture {
   }
 
   render(): void {
+    if (this.mascot === "orange-crab") {
+      this.renderClaudeCodeHome();
+      return;
+    }
     const context = this.context;
+    // History trimming can reduce the maximum scroll offset. Clamp before
+    // drawing so a recovered panel can never render only the empty area below
+    // its visible buffer.
+    const maxScrollOffset = this.getTargetScrollOffset();
+    if (this.scrollOffset > maxScrollOffset) this.scrollOffset = maxScrollOffset;
     context.clearRect(0, 0, this.width, this.height);
     context.fillStyle = COLORS.background;
     context.fillRect(0, 0, this.width, this.height);
@@ -418,6 +430,7 @@ export class TerminalTexture {
       this.historyLines.splice(0, this.historyLines.length - this.maxHistoryLines);
     }
     this.scrollTargetOffset = this.getTargetScrollOffset();
+    if (this.scrollOffset > this.scrollTargetOffset) this.scrollOffset = this.scrollTargetOffset;
   }
 
   private getTargetScrollOffset(): number {
@@ -444,6 +457,198 @@ export class TerminalTexture {
     context.fill();
     context.fillStyle = COLORS.border;
     context.fillRect(52, 76, this.width - 104, 2);
+    if (this.mascot === "orange-crab") this.drawOrangeCrab(this.width - 150, 52, 0.82);
+  }
+
+  private renderClaudeCodeHome(): void {
+    const context = this.context;
+    const orange = "#dd7857";
+    const warmWhite = "#f1eee8";
+    const gray = "#a7a3a0";
+    const dim = "#6f6a68";
+    const panelWidth = this.width - 8;
+    const panelHeight = this.height - 54;
+
+    context.clearRect(0, 0, this.width, this.height);
+    context.fillStyle = "#050505";
+    context.fillRect(0, 0, this.width, this.height);
+    context.strokeStyle = orange;
+    context.lineWidth = 3;
+    context.beginPath();
+    context.roundRect(4, 24, panelWidth, panelHeight, 8);
+    context.stroke();
+
+    context.textBaseline = "alphabetic";
+    context.font = `600 26px ${FONT_FAMILY}`;
+    context.fillStyle = orange;
+    context.fillText("Claude Code", 40, 46);
+    context.font = `500 22px ${FONT_FAMILY}`;
+    context.fillStyle = gray;
+    context.fillText("v2.1.34", 248, 46);
+    context.strokeStyle = orange;
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(365, 47);
+    context.lineTo(990, 47);
+    context.stroke();
+
+    context.strokeStyle = "#7b3e2f";
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(370, 58);
+    context.lineTo(370, 315);
+    context.stroke();
+
+    context.font = `500 25px ${FONT_FAMILY}`;
+    context.fillStyle = warmWhite;
+    context.fillText("Welcome back Kui!", 72, 92);
+    this.drawOrangeCrab(187, 174, 1.08, true);
+
+    context.font = `500 20px ${FONT_FAMILY}`;
+    context.fillStyle = gray;
+    context.fillText("claude-haiku-4-5 · API Usage Billing", 40, 330);
+    context.fillText("D:\\portfolio\\portfolio", 105, 357);
+
+    context.font = `600 21px ${FONT_FAMILY}`;
+    context.fillStyle = "#a6543e";
+    context.fillText("Tips for getting started", 394, 80);
+    context.font = `500 18px ${FONT_FAMILY}`;
+    context.fillStyle = gray;
+    context.fillText("Run /init to create a CLAUDE.md file with instructions", 394, 104);
+    context.fillText("for Claude", 394, 127);
+    context.fillStyle = dim;
+    context.fillText("Note: workspace opened in a trusted project folder", 394, 151);
+    context.strokeStyle = "#7b3e2f";
+    context.beginPath();
+    context.moveTo(394, 171);
+    context.lineTo(978, 171);
+    context.stroke();
+
+    context.font = `600 21px ${FONT_FAMILY}`;
+    context.fillStyle = "#a6543e";
+    context.fillText("Recent activity", 394, 198);
+    const recentLines = this.getClaudeRecentLines();
+    context.font = `500 18px ${FONT_FAMILY}`;
+    context.fillStyle = gray;
+    if (recentLines.length === 0) context.fillText("No recent activity", 394, 222);
+    recentLines.forEach((line, index) => context.fillText(line, 394, 222 + index * 22));
+
+    context.fillStyle = gray;
+    context.font = `500 20px ${FONT_FAMILY}`;
+    context.fillText("/model to try Opus 4.6", 28, 404);
+    context.strokeStyle = "#353535";
+    context.beginPath();
+    context.moveTo(0, 430);
+    context.lineTo(this.width, 430);
+    context.moveTo(0, 484);
+    context.lineTo(this.width, 484);
+    context.stroke();
+    context.fillStyle = warmWhite;
+    context.font = `500 19px ${FONT_FAMILY}`;
+    context.fillText('❯ Try "fix typecheck errors"', 0, 461);
+    context.fillStyle = gray;
+    context.fillText("? for shortcuts", 28, 507);
+    context.fillText("○ /ide for Visual Studio Code", 748, 507);
+
+    this.redrawCount += 1;
+    this.textureUploadCount += 1;
+    this.texture.needsUpdate = true;
+  }
+
+  private getClaudeRecentLines(): string[] {
+    const recent = this.historyLines
+      .filter((line) => line.type !== "blank")
+      .map((line) => line.type === "command" ? `$ ${line.text ?? ""}` : line.text ?? "")
+      .filter(Boolean)
+      .slice(-4);
+    if (this.currentCommandLineIndex >= 0 && this.currentEventLines.length > 0) {
+      const typed = this.currentCommandText.slice(0, this.visibleCommandLength);
+      recent.push(`$ ${typed}`);
+    }
+    return recent.slice(-4);
+  }
+
+  private drawOrangeCrab(centerX: number, centerY: number, scale: number, pixelated = false): void {
+    const context = this.context;
+    context.save();
+    context.translate(centerX, centerY);
+    context.scale(scale, scale);
+    if (pixelated) {
+      const pixels = [
+        "   OO   OO   ",
+        "   OO   OO   ",
+        " OOOOOOOOOOO ",
+        "OOOOOOOOOOOOO",
+        "OOOOOOOOOOOOO",
+        " OOOOOOOOOOO ",
+        "  OOO   OOO  ",
+        " OO       OO ",
+      ];
+      const pixelSize = 11;
+      context.fillStyle = "#dd7857";
+      pixels.forEach((row, rowIndex) => {
+        [...row].forEach((cell, columnIndex) => {
+          if (cell === "O") context.fillRect((columnIndex - 6) * pixelSize, (rowIndex - 4) * pixelSize, pixelSize, pixelSize);
+        });
+      });
+      context.restore();
+      return;
+    }
+    context.lineCap = "round";
+    context.lineJoin = "round";
+
+    const shell = "#f28b4b";
+    const shellLight = "#ffb06f";
+    const shellDark = "#b84f2d";
+    context.strokeStyle = shellDark;
+    context.lineWidth = 4;
+    context.fillStyle = shell;
+
+    // Body and eyes.
+    context.beginPath();
+    context.ellipse(0, 4, 31, 19, 0, 0, Math.PI * 2);
+    context.fill();
+    context.stroke();
+    context.fillStyle = shellLight;
+    context.beginPath();
+    context.arc(-11, -12, 7, 0, Math.PI * 2);
+    context.arc(11, -12, 7, 0, Math.PI * 2);
+    context.fill();
+    context.stroke();
+    context.fillStyle = shellDark;
+    context.beginPath();
+    context.arc(-11, -12, 2.5, 0, Math.PI * 2);
+    context.arc(11, -12, 2.5, 0, Math.PI * 2);
+    context.fill();
+
+    // Claws.
+    context.strokeStyle = shell;
+    context.lineWidth = 7;
+    context.beginPath();
+    context.moveTo(-24, 2);
+    context.lineTo(-43, -10);
+    context.moveTo(24, 2);
+    context.lineTo(43, -10);
+    context.stroke();
+    context.strokeStyle = shellDark;
+    context.lineWidth = 4;
+    context.beginPath();
+    context.arc(-48, -13, 10, 0.2, Math.PI * 1.35);
+    context.arc(48, -13, 10, Math.PI * 1.65, Math.PI * 2.8);
+    context.stroke();
+
+    // Six small legs.
+    context.strokeStyle = shell;
+    context.lineWidth = 5;
+    [-1, 1].forEach((side) => {
+      [-7, 3, 13].forEach((y, index) => {
+        context.beginPath();
+        context.moveTo(side * 24, y);
+        context.lineTo(side * (42 + index * 3), y + (index - 1) * 10);
+        context.stroke();
+      });
+    });
+    context.restore();
   }
 
   private drawLine(text: string, color: string, x: number, y: number): void {

@@ -44,13 +44,16 @@ function escapeHtml(value: string): string {
 export class PortfolioUi {
   private readonly panel = document.querySelector<HTMLElement>("#module-panel");
   private readonly index = document.querySelector<HTMLElement>("#module-index");
+  private readonly projectTopControls = document.querySelector<HTMLElement>("#project-top-controls");
   private readonly kicker = document.querySelector<HTMLElement>("#module-kicker");
   private readonly introManifesto = document.querySelector<HTMLElement>("#intro-manifesto");
   private readonly title = document.querySelector<HTMLElement>("#module-title");
   private readonly subtitle = document.querySelector<HTMLElement>("#module-subtitle");
   private readonly body = document.querySelector<HTMLElement>("#module-body");
+  private readonly techStackGrid = document.querySelector<HTMLElement>("#tech-stack-grid");
   private readonly creativityShowcase = document.querySelector<HTMLElement>("#creativity-showcase");
   private readonly timeline = document.querySelector<HTMLElement>("#module-timeline");
+  private readonly interestsCertificates = document.querySelector<HTMLElement>("#interests-certificates");
   private readonly tags = document.querySelector<HTMLElement>("#module-tags");
   private readonly actions = document.querySelector<HTMLElement>("#module-actions");
   private readonly creativityExperience = document.querySelector<HTMLElement>("#creativity-experience");
@@ -76,6 +79,8 @@ export class PortfolioUi {
   private typewriterLineIndex = 0;
   private typewriterSuffix = "";
   private typewriterDeleting = false;
+  private readonly projectDetails = new Map<string, string>();
+  private projectDetailRequestId = 0;
   private introManifestoTimer: number | undefined;
   private introManifestoRunId = 0;
   private introManifestoPlayed = false;
@@ -109,6 +114,13 @@ export class PortfolioUi {
       if (action === "goto-intro") void this.goTo("personalIntro");
       if (action === "enter-closeup") void this.enterCloseup();
       if (action === "exit-closeup") void this.exitCloseup();
+    });
+    this.projectTopControls?.addEventListener("click", (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLElement>("[data-ui-action]");
+      if (!target) return;
+      const action = target.dataset.uiAction;
+      if (action === "prev-project") this.changeProject(-1);
+      if (action === "next-project") this.changeProject(1);
     });
     this.creativityShowcase?.addEventListener("click", (event) => {
       const target = (event.target as HTMLElement).closest<HTMLElement>("[data-creativity-entry]");
@@ -268,6 +280,11 @@ export class PortfolioUi {
     const project = state === "projects" ? portfolioContent.projects[this.currentProjectIndex] : undefined;
     const moduleNumber = NAV_STATES.indexOf(snapshot.mainState) + 1;
     this.index.textContent = String(moduleNumber).padStart(2, "0");
+    if (this.projectTopControls) {
+      const showProjectControls = state === "projects" && !isCloseup && Boolean(project);
+      this.projectTopControls.hidden = !showProjectControls;
+      this.projectTopControls.innerHTML = showProjectControls ? this.renderProjectTopControls() : "";
+    }
     this.kicker.textContent = isCloseup ? "CREATIVITY / CLOSEUP" : content.kicker;
     if (this.introManifesto) {
       if (isIntro && moduleChanged && !this.introManifestoPlayed) {
@@ -278,9 +295,19 @@ export class PortfolioUi {
     }
     this.title.textContent = project?.title ?? (isCloseup ? "Creativity CloseUp" : content.title);
     this.subtitle.textContent = project ? `${project.type} · ${project.format}` : content.subtitle;
-    this.body.innerHTML = project
-      ? `<p>${escapeHtml(project.summary)}</p><p class="project-detail">${escapeHtml(project.status)} · ${escapeHtml(project.date)} · ${escapeHtml(project.format)}</p>`
-      : `<p>${escapeHtml(content.body)}</p><p class="module-detail">${escapeHtml(isCloseup ? "显示器已进入近景状态；返回后可继续浏览其他模块。" : content.detail)}</p>`;
+    if (project) {
+      this.body.innerHTML = `<p>${escapeHtml(project.summary)}</p><p class="project-detail">${escapeHtml(project.status)} · ${escapeHtml(project.date)} · ${escapeHtml(project.format)}</p><div class="project-detail-content" data-project-detail><p class="project-detail-loading">Loading project notes…</p></div>${this.renderProjectMedia(project)}`;
+      this.panel.scrollTop = 0;
+      void this.loadProjectDetail(project);
+    } else {
+      this.projectDetailRequestId += 1;
+      this.body.innerHTML = `<p>${escapeHtml(content.body)}</p><p class="module-detail">${escapeHtml(isCloseup ? "显示器已进入近景状态；返回后可继续浏览其他模块。" : content.detail)}</p>`;
+    }
+    if (this.techStackGrid) {
+      const showTechStack = state === "techStack" && !isCloseup;
+      this.techStackGrid.hidden = !showTechStack;
+      this.techStackGrid.innerHTML = showTechStack ? this.renderTechStack() : "";
+    }
     if (this.creativityShowcase) {
       const showShowcase = state === "creativityBase" && !isCloseup;
       this.creativityShowcase.hidden = !showShowcase;
@@ -288,15 +315,21 @@ export class PortfolioUi {
     }
     this.timeline.hidden = !isIntro;
     this.timeline.innerHTML = isIntro ? this.renderExperienceTimeline() : "";
+    if (this.interestsCertificates) {
+      const showCertificates = state === "moreInterests" && !isCloseup;
+      this.interestsCertificates.hidden = !showCertificates;
+      this.interestsCertificates.innerHTML = showCertificates ? this.renderInterestCertificates() : "";
+    }
     const tags = project?.tags ?? content.tags;
     this.tags.innerHTML = tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("");
     this.actions.innerHTML = this.renderActions(snapshot, project);
     this.panel.classList.toggle("is-intro", isIntro);
     this.setCloseupPanelHidden(isCloseup || this.closeupExperienceVisible);
-    if (this.brandCaption) this.brandCaption.hidden = isIntro;
-    if (this.introTypewriter) this.introTypewriter.hidden = !isIntro;
-    if (isIntro) this.startTypewriter();
-    else this.stopTypewriter();
+    // The typewriter is part of the persistent global header, not Intro-only
+    // module content. Start it once and keep it running across navigation.
+    if (this.brandCaption) this.brandCaption.hidden = true;
+    if (this.introTypewriter) this.introTypewriter.hidden = false;
+    this.startTypewriter();
     this.renderedMainState = snapshot.mainState;
     this.renderedDetailState = snapshot.detailState;
     this.panel.classList.remove("is-updating");
@@ -314,7 +347,129 @@ export class PortfolioUi {
   }
 
   private renderCreativityShowcase(): string {
-    return `<div class="creativity-showcase-heading"><span class="timeline-rule"></span><span>INTERACTIVE WORKS / HOVER TO PREVIEW</span></div><div class="creativity-showcase-list">${portfolioContent.conceptLab.map((entry) => `<article class="creativity-entry ${entry.slug === this.selectedCreativitySlug ? "is-selected" : ""}" data-creativity-entry="${escapeHtml(entry.slug)}" tabindex="0"><img class="creativity-entry-cover" src="${escapeHtml(entry.cover)}" alt="${escapeHtml(entry.title)} cover" /><div class="creativity-entry-copy"><p class="creativity-entry-index">${entry.slug === "ghostfont" ? "01" : "02"}</p><h2>${escapeHtml(entry.title)}</h2><p>${escapeHtml(entry.summary)}</p><div class="creativity-entry-tags">${entry.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div><button type="button" class="creativity-entry-open" data-creativity-entry="${escapeHtml(entry.slug)}">Enter CloseUp <span>↗</span></button></div></article>`).join("")}</div>`;
+    return `<div class="creativity-showcase-heading"><span class="timeline-rule"></span><span>INTERACTIVE WORKS / HOVER TO PREVIEW</span></div><div class="creativity-showcase-list">${portfolioContent.conceptLab.map((entry, index) => `<article class="creativity-entry ${entry.slug === this.selectedCreativitySlug ? "is-selected" : ""}" data-creativity-entry="${escapeHtml(entry.slug)}" tabindex="0"><img class="creativity-entry-cover" src="${escapeHtml(entry.cover)}" alt="${escapeHtml(entry.title)} cover" /><div class="creativity-entry-copy"><p class="creativity-entry-index">${String(index + 1).padStart(2, "0")}</p><h2>${escapeHtml(entry.title)}</h2><p>${escapeHtml(entry.summary)}</p><div class="creativity-entry-tags">${entry.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div><button type="button" class="creativity-entry-open" data-creativity-entry="${escapeHtml(entry.slug)}">Enter CloseUp <span>↗</span></button></div></article>`).join("")}</div>`;
+  }
+
+  private renderTechStack(): string {
+    return portfolioContent.techStack.groups.map((group) => `<article class="tech-stack-card"><p class="tech-stack-label">${escapeHtml(group.label)}</p><div class="tech-stack-items">${group.items.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div></article>`).join("");
+  }
+
+  private renderInterestCertificates(): string {
+    return `<div class="interests-certificates-heading"><span class="timeline-rule"></span><span>PHOTOGRAPHY / AWARDS</span></div><div class="interests-certificates-grid">${portfolioContent.interests.certificates.map((certificate) => `<article class="interest-certificate"><img class="interest-certificate-photo" src="${escapeHtml(certificate.photo)}" alt="${escapeHtml(certificate.title)} photography work" loading="lazy" /><img class="interest-certificate-image" src="${escapeHtml(certificate.image)}" alt="${escapeHtml(certificate.title)} certificate" loading="lazy" /><div class="interest-certificate-copy"><h2>${escapeHtml(certificate.title)}</h2><p>${escapeHtml(certificate.award)}</p></div></article>`).join("")}</div>`;
+  }
+
+  private renderProjectMedia(project: PortfolioProject): string {
+    const video = project.media?.find((item) => item.type === "video");
+    if (!video) return "";
+    return `<div class="project-media"><div class="project-media-heading"><span class="timeline-rule"></span><span>${escapeHtml(video.title)} / LOCAL ASSET</span></div><video class="project-demo" controls muted playsinline preload="metadata" src="${escapeHtml(video.src)}"></video></div>`;
+  }
+
+  private async loadProjectDetail(project: PortfolioProject): Promise<void> {
+    const requestId = ++this.projectDetailRequestId;
+    let markdown = this.projectDetails.get(project.slug);
+    try {
+      if (!markdown) {
+        const response = await fetch(project.detailPath, { cache: "no-cache" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        markdown = await response.text();
+        this.projectDetails.set(project.slug, markdown);
+      }
+      if (requestId !== this.projectDetailRequestId || this.currentSnapshot.mainState !== "projects") return;
+      const detailElement = this.body?.querySelector<HTMLElement>("[data-project-detail]");
+      if (detailElement) detailElement.innerHTML = this.renderProjectMarkdown(markdown, project);
+    } catch (error) {
+      if (requestId !== this.projectDetailRequestId || this.currentSnapshot.mainState !== "projects") return;
+      const detailElement = this.body?.querySelector<HTMLElement>("[data-project-detail]");
+      if (detailElement) detailElement.innerHTML = `<p class="project-detail-loading">Project notes are unavailable right now.</p>`;
+      console.warn(`[Projects] could not load detail for ${project.slug}`, error);
+    }
+  }
+
+  private renderProjectMarkdown(markdown: string, project: PortfolioProject): string {
+    const source = markdown.replace(/^---[\s\S]*?---\s*/u, "").trim();
+    const lines = source.split(/\r?\n/u);
+    const html: string[] = [];
+    let inCode = false;
+    let codeLines: string[] = [];
+    let listOpen = false;
+    const closeList = () => {
+      if (!listOpen) return;
+      html.push("</ul>");
+      listOpen = false;
+    };
+    lines.forEach((line) => {
+      if (line.trim().startsWith("```")) {
+        if (inCode) {
+          html.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+          codeLines = [];
+          inCode = false;
+        } else {
+          closeList();
+          inCode = true;
+        }
+        return;
+      }
+      if (inCode) {
+        codeLines.push(line);
+        return;
+      }
+      const trimmed = line.trim();
+      if (!trimmed) {
+        closeList();
+        return;
+      }
+      const heading = trimmed.match(/^(#{2,4})\s+(.+)$/u);
+      if (heading) {
+        closeList();
+        const level = Math.min(4, Math.max(3, heading[1].length + 1));
+        html.push(`<h${level}>${this.renderProjectInline(heading[2], project)}</h${level}>`);
+        return;
+      }
+      const listItem = trimmed.match(/^[-*]\s+(.+)$/u);
+      if (listItem) {
+        if (!listOpen) {
+          html.push("<ul>");
+          listOpen = true;
+        }
+        html.push(`<li>${this.renderProjectInline(listItem[1], project)}</li>`);
+        return;
+      }
+      const image = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/u);
+      if (image) {
+        closeList();
+        const src = this.resolveProjectAssetUrl(project, image[2]);
+        html.push(`<figure><img src="${escapeHtml(src)}" alt="${escapeHtml(image[1])}" loading="lazy" /><figcaption>${escapeHtml(image[1])}</figcaption></figure>`);
+        return;
+      }
+      closeList();
+      html.push(`<p>${this.renderProjectInline(trimmed, project)}</p>`);
+    });
+    closeList();
+    if (inCode) html.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+    return html.join("");
+  }
+
+  private renderProjectInline(value: string, project: PortfolioProject): string {
+    const escaped = escapeHtml(value);
+    return escaped
+      .replace(/`([^`]+)`/gu, "<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/gu, "<strong>$1</strong>")
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/gu, (_match, label: string, url: string) => {
+        const resolvedUrl = this.resolveProjectAssetUrl(project, url);
+        const external = /^https?:\/\//u.test(resolvedUrl);
+        return `<a class="project-inline-link" href="${escapeHtml(resolvedUrl)}"${external ? ` target="_blank" rel="noreferrer"` : ""}>${label} ↗</a>`;
+      });
+  }
+
+  private resolveProjectAssetUrl(project: PortfolioProject, url: string): string {
+    const normalized = url.trim();
+    if (/^https?:\/\//u.test(normalized) || normalized.startsWith("/")) return normalized;
+    if (normalized.includes("videoes/ooda2.mp4")) return "/content-media/projects/videos/ue5-drone-control-demo.mp4";
+    if (normalized.includes("videoes/codeplay.mp4")) return "/content-media/projects/videos/bursting-milk-tea-shop-demo.mp4";
+    if (project.slug === "bursting-milk-tea-shop" && normalized === "image.png") return "/content-media/projects/details/bursting-milk-tea-shop-image.webp";
+    if (project.slug === "kitchen-symphony" && normalized.includes("images/pic05.png")) return "/content-media/projects/covers/kitchen-symphony-cover.webp";
+    if (project.slug === "save-lara" && normalized.includes("images/pic03.png")) return "/content-media/projects/covers/save-lara-cover.webp";
+    return normalized;
   }
 
   private startIntroManifesto(): void {
@@ -432,10 +587,10 @@ export class PortfolioUi {
       return `<button class="ui-action ui-action-primary" type="button" data-ui-action="exit-closeup">Return to Creativity <span>←</span></button>`;
     }
     if (snapshot.mainState === "projects" && project) {
-      const link = project.link
-        ? `<a class="ui-action ui-action-secondary" href="${escapeHtml(project.link.url)}" target="_blank" rel="noreferrer">${escapeHtml(project.link.label)} <span>↗</span></a>`
+      const links = project.links?.length
+        ? `<div class="project-links">${project.links.map((link) => `<a class="ui-action ui-action-secondary" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(link.label)} <span>↗</span></a>`).join("")}</div>`
         : "";
-      return `<div class="project-controls"><button class="ui-action ui-action-secondary" type="button" data-ui-action="prev-project">← Prev</button><span>${String(this.currentProjectIndex + 1).padStart(2, "0")} / ${String(portfolioContent.projects.length).padStart(2, "0")}</span><button class="ui-action ui-action-secondary" type="button" data-ui-action="next-project">Next →</button></div>${link}`;
+      return links;
     }
     if (snapshot.mainState === "creativityBase") {
       return `<span class="module-action-hint">Hover a work to preview it on the monitor · click to enter CloseUp</span>`;
@@ -444,5 +599,9 @@ export class PortfolioUi {
       return `<button class="ui-action ui-action-primary" type="button" data-ui-action="goto-projects">Explore Projects <span>→</span></button>`;
     }
     return `<button class="ui-action ui-action-secondary" type="button" data-ui-action="goto-intro">Back to Intro <span>↗</span></button>`;
+  }
+
+  private renderProjectTopControls(): string {
+    return `<button class="project-top-action" type="button" data-ui-action="prev-project" aria-label="Previous project">←</button><span class="project-top-count">${String(this.currentProjectIndex + 1).padStart(2, "0")} / ${String(portfolioContent.projects.length).padStart(2, "0")}</span><button class="project-top-action" type="button" data-ui-action="next-project" aria-label="Next project">→</button>`;
   }
 }

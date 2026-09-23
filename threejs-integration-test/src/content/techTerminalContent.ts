@@ -23,7 +23,7 @@ export interface TerminalPanelContent {
   maxEventDelay: number;
 }
 
-const prompt = { type: "prompt", text: "ze@portfolio ~/workspace" } as const;
+const prompt = { type: "prompt", text: "kui@portfolio ~/workspace" } as const;
 
 const developmentEvents: readonly TerminalEventTemplate[] = [
   {
@@ -118,50 +118,53 @@ const gitEvents: readonly TerminalEventTemplate[] = [
 
 const toolsEvents: readonly TerminalEventTemplate[] = [
   {
-    id: "codex-ready",
+    id: "claude-ready",
     lines: [
-      prompt,
-      { type: "command", text: "codex" },
-      { type: "output", text: "workspace loaded" },
-      { type: "success", text: "ready" },
+      { type: "prompt", text: "(base) PS D:\\portfolio\\portfolio>" },
+      { type: "command", text: "claude" },
+      { type: "output", text: "Claude Code v2.1.34" },
+      { type: "output", text: "workspace trust check passed" },
+      { type: "success", text: "session ready" },
     ],
   },
   {
-    id: "three-scene",
+    id: "claude-model",
     lines: [
-      { type: "output", text: "[three] scene loaded" },
-      { type: "success", text: "5 roots found" },
+      { type: "prompt", text: "(base) PS D:\\portfolio\\portfolio>" },
+      { type: "command", text: "/model" },
+      { type: "output", text: "claude-haiku-4-5 · API Usage Billing" },
+      { type: "success", text: "model available" },
     ],
   },
   {
-    id: "blender-mcp",
+    id: "claude-workspace",
     lines: [
-      prompt,
-      { type: "command", text: "blender-mcp inspect" },
-      { type: "output", text: "asset hierarchy ready" },
-      { type: "success", text: "content planes excluded" },
+      { type: "output", text: "Tips: run /init to create project instructions" },
+      { type: "output", text: "? for shortcuts" },
+      { type: "success", text: "workspace loaded" },
     ],
   },
   {
-    id: "gltf-check",
+    id: "claude-command",
     lines: [
-      { type: "output", text: "[asset] portfolio_scene.glb" },
-      { type: "success", text: "loaded in {{duration}}" },
+      { type: "prompt", text: "(base) PS D:\\portfolio\\portfolio>" },
+      { type: "command", text: "fix typecheck errors" },
+      { type: "output", text: "analyzing workspace" },
+      { type: "success", text: "ready for collaboration" },
     ],
   },
   {
-    id: "shader-compile",
+    id: "claude-context",
     lines: [
-      prompt,
-      { type: "command", text: "compile npr pipeline" },
-      { type: "success", text: "outline and hatch passes ready" },
+      { type: "output", text: "project context indexed" },
+      { type: "success", text: "safe workspace mode" },
     ],
   },
   {
-    id: "asset-cache",
+    id: "claude-update",
     lines: [
-      { type: "output", text: "[cache] terminal textures ready" },
-      { type: "success", text: "scene assets available" },
+      { type: "output", text: "collaboration session active" },
+      { type: "success", text: "waiting for next task" },
     ],
     minDelay: 1700,
     maxDelay: 3500,
@@ -197,12 +200,12 @@ export const techTerminalPanels: readonly TerminalPanelContent[] = [
   },
   {
     id: "tools",
-    title: "tools",
+    title: "claude code",
     initialLines: [
-      prompt,
-      { type: "command", text: "codex" },
-      { type: "output", text: "workspace loaded" },
-      { type: "success", text: "ready" },
+      { type: "prompt", text: "(base) PS D:\\portfolio\\portfolio>" },
+      { type: "command", text: "claude" },
+      { type: "output", text: "Claude Code v2.1.34" },
+      { type: "success", text: "session ready" },
     ],
     events: toolsEvents,
     minEventDelay: 1000,

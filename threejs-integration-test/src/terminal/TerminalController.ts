@@ -78,6 +78,7 @@ export class TerminalController {
   private active = false;
   private hasEnteredTech = false;
   private liveEnabled = true;
+  private watchdogTimer: number | undefined;
 
   constructor(
     private readonly root: THREE.Object3D,
@@ -94,6 +95,7 @@ export class TerminalController {
         width: 1024,
         height: 512,
         title: content.title,
+        mascot: content.id === "tools" ? "orange-crab" : undefined,
         maxHistoryLines: 100,
         visibleLineCount: 9,
         typingSpeed: 34,
@@ -119,24 +121,22 @@ export class TerminalController {
   }
 
   activate(): void {
-    if (this.active) return;
     if (!this.liveEnabled) return;
     this.active = true;
     if (!this.hasEnteredTech) {
       this.hasEnteredTech = true;
       this.scheduleInitialSequences(0);
+      this.startWatchdog();
       return;
     }
 
-    this.terminals.forEach((entry, index) => {
-      entry.texture.resume();
-      if (!entry.initialStarted) this.scheduleInitial(entry, 220 + index * 160);
-      else if (!entry.nextTimer && !entry.texture.isBusy()) this.scheduleNext(entry, 220, 500);
-    });
+    this.ensureLiveScheduling();
+    this.startWatchdog();
   }
 
   deactivate(): void {
     this.active = false;
+    this.stopWatchdog();
     this.terminals.forEach((entry) => {
       this.clearEntryTimers(entry);
       entry.texture.pause();
@@ -155,11 +155,13 @@ export class TerminalController {
       entry.lastEventStartedAt = 0;
     });
     this.scheduleInitialSequences(0);
+    this.startWatchdog();
   }
 
   pause(): void {
     this.liveEnabled = false;
     this.active = false;
+    this.stopWatchdog();
     this.terminals.forEach((entry) => {
       this.clearEntryTimers(entry);
       entry.texture.pause();
@@ -172,13 +174,11 @@ export class TerminalController {
     if (!this.hasEnteredTech) {
       this.hasEnteredTech = true;
       this.scheduleInitialSequences(0);
+      this.startWatchdog();
       return;
     }
-    this.terminals.forEach((entry, index) => {
-      entry.texture.resume();
-      if (!entry.initialStarted) this.scheduleInitial(entry, 220 + index * 160);
-      else if (!entry.nextTimer && !entry.texture.isBusy()) this.scheduleNext(entry, 220, 500);
-    });
+    this.ensureLiveScheduling();
+    this.startWatchdog();
   }
 
   pauseForVisibility(): void {
@@ -188,11 +188,8 @@ export class TerminalController {
 
   resumeFromVisibility(): void {
     if (!this.active || !this.liveEnabled) return;
-    this.terminals.forEach((entry, index) => {
-      entry.texture.resume();
-      if (!entry.initialStarted) this.scheduleInitial(entry, 220 + index * 160);
-      else if (!entry.nextTimer && !entry.texture.isBusy()) this.scheduleNext(entry, 220, 500);
-    });
+    this.ensureLiveScheduling();
+    this.startWatchdog();
   }
 
   setLiveEnabled(enabled: boolean): void {
@@ -254,6 +251,7 @@ export class TerminalController {
 
   dispose(): void {
     this.clearAllTimers();
+    this.stopWatchdog();
     this.terminals.forEach((entry) => entry.texture.dispose());
     this.terminals.length = 0;
   }
@@ -292,7 +290,11 @@ export class TerminalController {
     entry.nextTimer = window.setTimeout(() => {
       entry.nextTimer = undefined;
       entry.nextDueAt = undefined;
-      if (!this.active || !this.liveEnabled || entry.texture.isBusy()) return;
+      if (!this.active || !this.liveEnabled) return;
+      if (entry.texture.isBusy()) {
+        this.scheduleNext(entry, 220, 500);
+        return;
+      }
       const event = this.chooseEvent(entry);
       if (event) this.startEvent(entry, event);
     }, delay);
@@ -305,14 +307,46 @@ export class TerminalController {
       this.scheduleNext(entry, 500, 800);
       return;
     }
-    entry.lastEventStartedAt = now;
-    entry.recentEventIds.push(event.id);
-    if (entry.recentEventIds.length > 4) entry.recentEventIds.shift();
-    entry.texture.startEvent(
+    const started = entry.texture.startEvent(
       instantiateLines(event.lines),
       () => this.scheduleNext(entry),
       event.outputPause ?? randomBetween(180, 360),
     );
+    if (!started) {
+      this.scheduleNext(entry, 220, 500);
+      return;
+    }
+    entry.lastEventStartedAt = now;
+    entry.recentEventIds.push(event.id);
+    if (entry.recentEventIds.length > 4) entry.recentEventIds.shift();
+  }
+
+  private ensureLiveScheduling(): void {
+    if (!this.active || !this.liveEnabled || document.hidden) return;
+    this.terminals.forEach((entry, index) => {
+      entry.texture.resume();
+      if (!entry.initialStarted) {
+        if (entry.initialTimer === undefined) this.scheduleInitial(entry, 220 + index * 160);
+        return;
+      }
+      if (entry.nextTimer === undefined && entry.texture.getState() === "idle") {
+        this.scheduleNext(entry, 220, 500);
+      }
+    });
+  }
+
+  private startWatchdog(): void {
+    if (this.watchdogTimer !== undefined) return;
+    this.watchdogTimer = window.setInterval(() => {
+      // This is a scheduling health check only. It never redraws a canvas;
+      // TerminalTexture remains event-driven and redraws only on state change.
+      this.ensureLiveScheduling();
+    }, 1000);
+  }
+
+  private stopWatchdog(): void {
+    if (this.watchdogTimer !== undefined) window.clearInterval(this.watchdogTimer);
+    this.watchdogTimer = undefined;
   }
 
   private chooseEvent(entry: TerminalEntry): TerminalEventTemplate | undefined {

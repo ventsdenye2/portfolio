@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">VR 人机交互课程项目集</title>
+  <desc id="desc">Unity and PICO 4 course projects with gaze, gesture and body interaction.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="1" stop-color="#17283a"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#95f4d3" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#75b9ff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="760" fill="url(#bg)"/>
+  <path d="M-40 650 L520 90 L1160 760" fill="none" stroke="url(#beam)" stroke-width="2" opacity=".65"/>
+  <path d="M210 760 L680 180 L1220 470" fill="none" stroke="#75b9ff" stroke-width="1" opacity=".28"/>
+  <circle cx="730" cy="290" r="118" fill="none" stroke="#95f4d3" stroke-width="2" opacity=".85"/>
+  <circle cx="730" cy="290" r="12" fill="#95f4d3"/>
+  <circle cx="730" cy="290" r="170" fill="none" stroke="#75b9ff" stroke-width="1" stroke-dasharray="5 14" opacity=".5"/>
+  <g fill="none" stroke="#95f4d3" stroke-width="2" opacity=".75">
+    <rect x="850" y="145" width="82" height="54" rx="10"/>
+    <path d="M864 220v28m54-28v28M875 248h32"/>
+    <path d="M890 174l18 0m-9-9v18"/>
+  </g>
+  <g fill="#ffffff" font-family="Arial, Microsoft YaHei, sans-serif">
+    <text x="76" y="112" font-size="22" letter-spacing="5" fill="#95f4d3">UNITY / PICO 4 / HCI</text>
+    <text x="76" y="212" font-size="62" font-weight="700">VR 人机交互</text>
+    <text x="76" y="282" font-size="62" font-weight="700">课程项目集</text>
+    <text x="80" y="350" font-size="22" fill="#b8c7d9">从眼动、手势到姿态捕捉的五个小型交互原型</text>
+    <text x="80" y="662" font-size="18" letter-spacing="3" fill="#95f4d3">BUILD · DEPLOY · DEBUG ON DEVICE</text>
+  </g>
+</svg>

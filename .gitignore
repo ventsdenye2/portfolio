@@ -37,10 +37,13 @@ blender-mcp/
 
 ### Three.js generated files
 /threejs-integration-test/node_modules/
+/threejs-integration-test/node_modules.stale-*/
+/threejs-integration-test/node_modules.stale-*/
 /threejs-integration-test/dist/
 /threejs-integration-test/.vite/
 /threejs-integration-test/.playwright-cli/
 /threejs-integration-test/references/
+/threejs-integration-test/source-media-originals/
 *.tsbuildinfo
 
 ### Python caches

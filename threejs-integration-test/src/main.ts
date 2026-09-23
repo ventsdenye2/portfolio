@@ -30,7 +30,7 @@ import {
   saveLightingPreset,
 } from "./effects/lightingPresetStorage";
 import { PortfolioUi } from "./ui/portfolioUi";
-import { portfolioContent } from "./content/portfolioContent";
+import { portfolioContent, type PortfolioProjectMedia } from "./content/portfolioContent";
 
 const queryParams = new URLSearchParams(window.location.search);
 const debugMode = queryParams.get("debug") === "1";
@@ -269,6 +269,10 @@ const portfolioProjectFallbackTextures = portfolioContent.projects.map((project,
   project.screenAccent,
 ));
 const portfolioProjectTextures: Array<THREE.Texture | null> = portfolioContent.projects.map(() => null);
+const portfolioProjectVideoTextures: Array<THREE.VideoTexture | null> = portfolioContent.projects.map(() => null);
+const portfolioProjectVideoElements: Array<HTMLVideoElement | null> = portfolioContent.projects.map(() => null);
+const portfolioProjectTexturePromises: Array<Promise<void> | null> = portfolioContent.projects.map(() => null);
+let activePortfolioProjectIndex = 0;
 let activeProjectScreen: "a" | "b" = "a";
 const creativityPreviewTextures = new Map<string, THREE.Texture>();
 let creativityPreviewRequest = 0;
@@ -353,14 +357,23 @@ function applyProjectScreenTexture(key: "a" | "b"): void {
   setStatus(`Projects screen texture ${key.toUpperCase()} applied only to Projects_Screen`, "success");
 }
 
-function applyPortfolioProjectTexture(index: number): void {
+function applyLoadedPortfolioProjectTexture(index: number): void {
   if (!loadedPortfolio) return;
   const project = portfolioContent.projects[index];
-  const texture = portfolioProjectTextures[index] ?? portfolioProjectFallbackTextures[index];
+  const texture = portfolioProjectVideoTextures[index] ?? portfolioProjectTextures[index] ?? portfolioProjectFallbackTextures[index];
   if (!project || !texture || !setProjectsScreenTexture(loadedPortfolio.scene, texture)) {
     setStatus("Projects_Screen was not found in the loaded GLB.", "error");
     return;
   }
+  portfolioProjectVideoElements.forEach((video, videoIndex) => {
+    if (!video) return;
+    if (videoIndex === index) {
+      video.currentTime = 0;
+      void video.play().catch(() => undefined);
+    } else {
+      video.pause();
+    }
+  });
   activeProjectScreen = index === 0 ? "a" : "b";
   document.querySelectorAll<HTMLButtonElement>("[data-project-screen]").forEach((button) => {
     button.dataset.active = button.dataset.projectScreen === activeProjectScreen ? "true" : "false";
@@ -368,9 +381,26 @@ function applyPortfolioProjectTexture(index: number): void {
   setStatus(`Project screen synced: ${project.title}`, "success");
 }
 
-async function loadPortfolioProjectTextures(): Promise<void> {
+function applyPortfolioProjectTexture(index: number): void {
+  if (!loadedPortfolio) return;
+  const project = portfolioContent.projects[index];
+  if (!project) return;
+  activePortfolioProjectIndex = index;
+  applyLoadedPortfolioProjectTexture(index);
+  void loadPortfolioProjectTexture(index).then(() => {
+    if (activePortfolioProjectIndex === index) applyLoadedPortfolioProjectTexture(index);
+  });
+}
+
+async function loadPortfolioProjectTexture(index: number): Promise<void> {
+  const existingPromise = portfolioProjectTexturePromises[index];
+  if (existingPromise) return existingPromise;
+
+  const project = portfolioContent.projects[index];
+  if (!project) return;
   const loader = new THREE.TextureLoader();
-  await Promise.all(portfolioContent.projects.map(async (project, index) => {
+  const loadCover = async (): Promise<void> => {
+    if (!project.screenImage || portfolioProjectTextures[index]) return;
     try {
       const texture = await loader.loadAsync(project.screenImage);
       texture.colorSpace = THREE.SRGBColorSpace;
@@ -381,18 +411,85 @@ async function loadPortfolioProjectTextures(): Promise<void> {
       texture.magFilter = THREE.LinearFilter;
       texture.needsUpdate = true;
       portfolioProjectTextures[index] = texture;
+      if (activePortfolioProjectIndex === index) applyLoadedPortfolioProjectTexture(index);
       console.log(`[Projects Screen] loaded real cover for ${project.title}: ${project.screenImage}`);
     } catch (error) {
       console.warn(`[Projects Screen] could not load ${project.screenImage}; using generated fallback.`, error);
     }
-  }));
+  };
+
+  const loadVideo = async (): Promise<void> => {
+    const autoplayVideo = project.media?.find((item): item is PortfolioProjectMedia => item.type === "video" && "autoplay" in item && item.autoplay === true);
+    if (!autoplayVideo || portfolioProjectVideoElements[index]) return;
+    try {
+      const video = document.createElement("video");
+      video.src = autoplayVideo.src;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.preload = "auto";
+      video.setAttribute("aria-hidden", "true");
+      video.style.position = "fixed";
+      video.style.left = "-10px";
+      video.style.bottom = "-10px";
+      video.style.width = "1px";
+      video.style.height = "1px";
+      video.style.opacity = "0";
+      video.style.pointerEvents = "none";
+      document.body.appendChild(video);
+      await new Promise<void>((resolve, reject) => {
+        const cleanup = () => {
+          window.clearTimeout(timeout);
+          video.removeEventListener("loadeddata", onLoaded);
+          video.removeEventListener("error", onError);
+        };
+        const onLoaded = () => { cleanup(); resolve(); };
+        const onError = () => {
+          cleanup();
+          video.removeAttribute("src");
+          video.load();
+          video.remove();
+          reject(new Error(`Could not load project video: ${autoplayVideo.src}`));
+        };
+        const timeout = window.setTimeout(onError, 15000);
+        video.addEventListener("loadeddata", onLoaded, { once: true });
+        video.addEventListener("error", onError, { once: true });
+        video.load();
+      });
+      video.pause();
+      video.currentTime = 0;
+      const texture = new THREE.VideoTexture(video);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.flipY = false;
+      texture.wrapS = THREE.ClampToEdgeWrapping;
+      texture.wrapT = THREE.ClampToEdgeWrapping;
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+      texture.needsUpdate = true;
+      portfolioProjectVideoElements[index] = video;
+      portfolioProjectVideoTextures[index] = texture;
+      console.log(`[Projects Screen] loaded local video cover for ${project.title}: ${autoplayVideo.src}`);
+    } catch (error) {
+      console.warn(`[Projects Screen] could not load video cover for ${project.title}; using image or generated fallback.`, error);
+    }
+  };
+
+  const promise = Promise.all([loadCover(), loadVideo()]).then(() => undefined);
+  portfolioProjectTexturePromises[index] = promise;
+  return promise;
 }
 
+/*
+ * Project covers and videos are intentionally loaded on demand. The initial
+ * scene can render with a generated fallback while a selected project asset
+ * arrives in the background, so large media never blocks the first screen.
+ */
 async function loadPersonalIntroPhotoTexture(): Promise<void> {
   if (!loadedPortfolio) return;
   const loader = new THREE.TextureLoader();
   try {
-    const texture = await loader.loadAsync("/content-media/pic01.png");
+    const texture = await loader.loadAsync("/content-media/pic01.webp");
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.flipY = false;
     texture.wrapS = THREE.ClampToEdgeWrapping;
@@ -405,9 +502,9 @@ async function loadPersonalIntroPhotoTexture(): Promise<void> {
       console.warn("[Personal Intro] PersonalIntro_Photo was not found in the loaded GLB.");
       return;
     }
-    console.log("[Personal Intro] loaded pic01.png into PersonalIntro_Photo");
+    console.log("[Personal Intro] loaded pic01.webp into PersonalIntro_Photo");
   } catch (error) {
-    console.warn("[Personal Intro] could not load /content-media/pic01.png; keeping the existing photo material.", error);
+    console.warn("[Personal Intro] could not load /content-media/pic01.webp; keeping the existing photo material.", error);
   }
 }
 
@@ -893,12 +990,13 @@ function adjustPersonalIntroState(state: CameraState): CameraState {
   };
   // Move closer while bringing the camera nearer to the photo's eye level.
   const approachFactor = 0.62;
-  const verticalApproachFactor = 0.8;
+  const verticalApproachFactor = 0.65;
+  const horizontalRightOffset = 0.4;
   return {
     ...state,
     target: photoTarget,
     position: {
-      x: state.position.x + (photoTarget.x - state.position.x) * approachFactor,
+      x: state.position.x + (photoTarget.x - state.position.x) * approachFactor + horizontalRightOffset,
       y: state.position.y + (photoTarget.y - state.position.y) * approachFactor,
       z: state.position.z + (photoTarget.z - state.position.z) * verticalApproachFactor,
     },
@@ -919,7 +1017,8 @@ function prepareCameraData(statesFile: CameraStatesFile, transitionsFile: Camera
   });
   console.log("[Camera] personalIntro code-level approach", JSON.stringify({
     approachFactor: 0.62,
-    verticalApproachFactor: 0.8,
+    verticalApproachFactor: 0.65,
+    horizontalRightOffset: 0.4,
     targetChanged: true,
     target: adjustedPersonalIntro.target,
     originalPosition: statesFile.states.personalIntro.position,
@@ -1291,9 +1390,8 @@ async function bootstrap(): Promise<void> {
     applyContentPlaneSettings(loadedPortfolio.scene);
     applyWarmGroundMaterial(loadedPortfolio.scene);
     terminalController = new TerminalController(loadedPortfolio.scene);
-    await loadPortfolioProjectTextures();
-    await loadPersonalIntroPhotoTexture();
     applyPortfolioProjectTexture(0);
+    void loadPersonalIntroPhotoTexture();
     applyShadowFlags(loadedPortfolio.scene);
     nprManager = new NPRManager(scene, keyLight);
     const nprDefinitions: Array<{

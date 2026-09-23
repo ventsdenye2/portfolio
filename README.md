@@ -23,6 +23,21 @@ npm run preview
 
 构建结果位于 `threejs-integration-test/dist/`，预览地址为 <http://localhost:4173/>。部署时上传 `dist/` 内的文件，不要上传整个仓库。Nginx 配置参考 `threejs-integration-test/deploy/`。
 
+## Git 发布分支
+
+- `main` 保存源码。
+- `deploy` 使用独立历史，根目录只保存构建后的站点文件。
+- 两个分支目前手动发布；向 `main` 推送不会自动更新 `deploy` 或服务器。
+
+服务器可以将发布分支克隆到一个新的目录（不要覆盖现有网站目录）：
+
+```bash
+git clone --single-branch --branch deploy https://github.com/ventsdenye2/portfolio.git ~/portfolio-deploy
+git -C ~/portfolio-deploy pull --ff-only
+```
+
+首次部署需将构建文件同步到 Nginx 网站目录，或通过版本目录切换发布。不要将 `.git` 目录复制到可公开访问的网站目录。服务器迁移尚需单独执行。
+
 ## 目录用途
 
 - `threejs-integration-test/src/`：页面逻辑、样式、3D 场景和交互。
