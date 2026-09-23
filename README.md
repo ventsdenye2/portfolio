@@ -43,6 +43,7 @@ git -C ~/portfolio-deploy pull --ff-only
 - `threejs-integration-test/src/`：页面逻辑、样式、3D 场景和交互。
 - `threejs-integration-test/src/content/portfolioContent.ts`：项目列表与个人介绍。
 - `threejs-integration-test/public/`：网站使用的模型、相机配置、项目正文、图片、视频与互动作品。
+- `threejs-integration-test/public/fonts/`：自托管字体、字符分片与许可证；首页不再依赖 Google Fonts 的在线服务。更新字体可运行 `python tools/vendor_google_fonts.py`（更新时需要联网）。
 - `threejs-integration-test/source-media-originals/legacy/`：旧站留下的原始项目文稿和媒体，仅用于编辑参考，不参与网站构建；该原始素材目录不纳入 Git。
 - 根目录的 Blender 工程、`tools/`、`exports/` 与报告：3D 制作工具和历史制作资料。
 
