@@ -1,0 +1,795 @@
+{
+  "version": "v1",
+  "sourceBlend": "D:\\portfolio\\portfolio\\portfolio_visual_master_v6.blend",
+  "navigationAction": {
+    "name": "Portfolio_Navigation_CameraAction",
+    "allKeyframes": [
+      1,
+      48,
+      69,
+      90,
+      138,
+      159,
+      180,
+      228,
+      249,
+      270,
+      318,
+      339,
+      360,
+      408
+    ]
+  },
+  "closeupAction": {
+    "name": "Creativity_Base_CloseUp_Return_v3",
+    "allKeyframes": [
+      1,
+      8,
+      14,
+      25,
+      36,
+      47,
+      56,
+      68
+    ]
+  },
+  "transitions": [
+    {
+      "name": "PersonalIntro_to_TechStack",
+      "from": "personalIntro",
+      "to": "techStack",
+      "camera": "Portfolio_Navigation_Camera",
+      "action": "Portfolio_Navigation_CameraAction",
+      "keyframes": [
+        {
+          "frame": 48,
+          "camera": "Portfolio_Navigation_Camera",
+          "position": {
+            "x": 0.07159,
+            "y": -5.295649,
+            "z": 2.332651
+          },
+          "rotationEuler": {
+            "x": 1.130657,
+            "y": 0.0,
+            "z": 0.796518
+          },
+          "quaternion": {
+            "x": 0.493769,
+            "y": 0.207749,
+            "z": 0.327475,
+            "w": 0.778327
+          },
+          "target": {
+            "x": -1.750069,
+            "y": -3.514059,
+            "z": 1.13265
+          },
+          "targetName": "TARGET_PersonalIntro",
+          "focalLength": 50.0,
+          "fov": 39.597753,
+          "blenderEvaluatedRotationEuler": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "frame": 69,
+          "camera": "Portfolio_Navigation_Camera",
+          "position": {
+            "x": -2.041214,
+            "y": -4.497671,
+            "z": 3.244725
+          },
+          "rotationEuler": {
+            "x": 1.303397,
+            "y": -0.0,
+            "z": 0.278863
+          },
+          "quaternion": {
+            "x": 0.600651,
+            "y": 0.084297,
+            "z": 0.110497,
+            "w": 0.787339
+          },
+          "target": {
+            "x": -3.686924,
+            "y": 1.250053,
+            "z": 1.6068
+          },
+          "targetName": "TARGET_TechStack",
+          "focalLength": 51.0,
+          "fov": 38.88007,
+          "blenderEvaluatedRotationEuler": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "frame": 90,
+          "camera": "Portfolio_Navigation_Camera",
+          "position": {
+            "x": -3.188111,
+            "y": -2.552076,
+            "z": 3.4568
+          },
+          "rotationEuler": {
+            "x": 1.121299,
+            "y": 0.0,
+            "z": 0.130448
+          },
+          "quaternion": {
+            "x": 0.530606,
+            "y": 0.034657,
+            "z": 0.0552,
+            "w": 0.845109
+          },
+          "target": {
+            "x": -3.686924,
+            "y": 1.250053,
+            "z": 1.6068
+          },
+          "targetName": "TARGET_TechStack",
+          "focalLength": 52.0,
+          "fov": 38.186984,
+          "blenderEvaluatedRotationEuler": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "name": "TechStack_to_Projects",
+      "from": "techStack",
+      "to": "projects",
+      "camera": "Portfolio_Navigation_Camera",
+      "action": "Portfolio_Navigation_CameraAction",
+      "keyframes": [
+        {
+          "frame": 138,
+          "camera": "Portfolio_Navigation_Camera",
+          "position": {
+            "x": -3.188111,
+            "y": -2.552076,
+            "z": 3.4568
+          },
+          "rotationEuler": {
+            "x": 1.121299,
+            "y": 0.0,
+            "z": 0.130448
+          },
+          "quaternion": {
+            "x": 0.530606,
+            "y": 0.034657,
+            "z": 0.0552,
+            "w": 0.845109
+          },
+          "target": {
+            "x": -3.686924,
+            "y": 1.250053,
+            "z": 1.6068
+          },
+          "targetName": "TARGET_TechStack",
+          "focalLength": 52.0,
+          "fov": 38.186984,
+          "blenderEvaluatedRotationEuler": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "frame": 159,
+          "camera": "Portfolio_Navigation_Camera",
+          "position": {
+            "x": 0.921871,
+            "y": -1.180284,
+            "z": 4.8484
+          },
+          "rotationEuler": {
+            "x": 0.883992,
+            "y": -0.0,
+            "z": -0.081879
+          },
+          "quaternion": {
+            "x": 0.427386,
+            "y": -0.017507,
+            "z": -0.036995,
+            "w": 0.903142
+          },
+          "target": {
+            "x": 1.216954,
+            "y": 2.415532,
+            "z": 1.89
+          },
+          "targetName": "TARGET_Projects",
+          "focalLength": 53.5,
+          "fov": 37.190882,
+          "blenderEvaluatedRotationEuler": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "frame": 180,
+          "camera": "Portfolio_Navigation_Camera",
+          "position": {
+            "x": 5.175765,
+            "y": -2.00378,
+            "z": 4.94
+          },
+          "rotationEuler": {
+            "x": 1.095965,
+            "y": -0.0,
+            "z": 0.730489
+          },
+          "quaternion": {
+            "x": 0.486601,
+            "y": 0.186077,
+            "z": 0.304879,
+            "w": 0.797272
+          },
+          "target": {
+            "x": 1.216954,
+            "y": 2.415532,
+            "z": 1.89
+          },
+          "targetName": "TARGET_Projects",
+          "focalLength": 55.0,
+          "fov": 36.24372,
+          "blenderEvaluatedRotationEuler": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects_to_CreativityBase",
+      "from": "projects",
+      "to": "creativityBase",
+      "camera": "Portfolio_Navigation_Camera",
+      "action": "Portfolio_Navigation_CameraAction",
+      "keyframes": [
+        {
+          "frame": 228,
+          "camera": "Portfolio_Navigation_Camera",
+          "position": {
+            "x": 5.175765,
+            "y": -2.00378,
+            "z": 4.94
+          },
+          "rotationEuler": {
+            "x": 1.095965,
+            "y": -0.0,
+            "z": 0.730489
+          },
+          "quaternion": {
+            "x": 0.486601,
+            "y": 0.186077,
+            "z": 0.304879,
+            "w": 0.797272
+          },
+          "target": {
+            "x": 1.216954,
+            "y": 2.415532,
+            "z": 1.89
+          },
+          "targetName": "TARGET_Projects",
+          "focalLength": 55.0,
+          "fov": 36.24372,
+          "blenderEvaluatedRotationEuler": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "frame": 249,
+          "camera": "Portfolio_Navigation_Camera",
+          "position": {
+            "x": 6.250072,
+            "y": -2.184217,
+            "z": 4.177245
+          },
+          "rotationEuler": {
+            "x": 0.961952,
+            "y": 0.0,
+            "z": 0.069839
+          },
+          "quaternion": {
+            "x": 0.462363,
+            "y": 0.016152,
+            "z": 0.030952,
+            "w": 0.886003
+          },
+          "target": {
+            "x": 5.893476,
+            "y": 2.913413,
+            "z": 0.61449
+          },
+          "targetName": "TARGET_Creativity",
+          "focalLength": 53.5,
+          "fov": 37.190882,
+          "blenderEvaluatedRotationEuler": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "frame": 270,
+          "camera": "Portfolio_Navigation_Camera",
+          "position": {
+            "x": 6.838463,
+            "y": -1.267436,
+            "z": 2.91449
+          },
+          "rotationEuler": {
+            "x": 1.078306,
+            "y": 0.0,
+            "z": 0.222292
+          },
+          "quaternion": {
+            "x": 0.510241,
+            "y": 0.056946,
+            "z": 0.095183,
+            "w": 0.852849
+          },
+          "target": {
+            "x": 5.893476,
+            "y": 2.913413,
+            "z": 0.61449
+          },
+          "targetName": "TARGET_Creativity",
+          "focalLength": 52.0,
+          "fov": 38.186984,
+          "blenderEvaluatedRotationEuler": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreativityBase_to_MoreInterests",
+      "from": "creativityBase",
+      "to": "moreInterests",
+      "camera": "Portfolio_Navigation_Camera",
+      "action": "Portfolio_Navigation_CameraAction",
+      "keyframes": [
+        {
+          "frame": 318,
+          "camera": "Portfolio_Navigation_Camera",
+          "position": {
+            "x": 6.838463,
+            "y": -1.267436,
+            "z": 2.91449
+          },
+          "rotationEuler": {
+            "x": 1.078306,
+            "y": 0.0,
+            "z": 0.222292
+          },
+          "quaternion": {
+            "x": 0.510241,
+            "y": 0.056946,
+            "z": 0.095183,
+            "w": 0.852849
+          },
+          "target": {
+            "x": 5.893476,
+            "y": 2.913413,
+            "z": 0.61449
+          },
+          "targetName": "TARGET_Creativity",
+          "focalLength": 52.0,
+          "fov": 38.186984,
+          "blenderEvaluatedRotationEuler": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "frame": 339,
+          "camera": "Portfolio_Navigation_Camera",
+          "position": {
+            "x": 9.569967,
+            "y": -4.245537,
+            "z": 4.046024
+          },
+          "rotationEuler": {
+            "x": 1.093874,
+            "y": -0.0,
+            "z": 1.445304
+          },
+          "quaternion": {
+            "x": 0.390083,
+            "y": 0.343964,
+            "z": 0.564896,
+            "w": 0.640638
+          },
+          "target": {
+            "x": 4.062175,
+            "y": -3.550698,
+            "z": 1.177559
+          },
+          "targetName": "TARGET_MoreInterests",
+          "focalLength": 49.0,
+          "fov": 40.341307,
+          "blenderEvaluatedRotationEuler": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "frame": 360,
+          "camera": "Portfolio_Navigation_Camera",
+          "position": {
+            "x": 10.026722,
+            "y": -8.260706,
+            "z": 4.077559
+          },
+          "rotationEuler": {
+            "x": 1.20627,
+            "y": 0.0,
+            "z": 0.902388
+          },
+          "quaternion": {
+            "x": 0.510463,
+            "y": 0.247334,
+            "z": 0.359106,
+            "w": 0.741145
+          },
+          "target": {
+            "x": 4.062175,
+            "y": -3.550698,
+            "z": 1.177559
+          },
+          "targetName": "TARGET_MoreInterests",
+          "focalLength": 46.0,
+          "fov": 42.741245,
+          "blenderEvaluatedRotationEuler": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "name": "MoreInterests_to_PersonalIntro",
+      "from": "moreInterests",
+      "to": "personalIntro",
+      "camera": "Portfolio_Navigation_Camera",
+      "action": "Portfolio_Navigation_CameraAction",
+      "exists": false,
+      "keyframes": [],
+      "note": "No explicit return segment exists in the current main navigation action."
+    },
+    {
+      "name": "CreativityBase_to_CreativityCloseup",
+      "from": "creativityBase",
+      "to": "creativityCloseup",
+      "camera": "Portfolio_Creativity_CloseUp_Camera",
+      "action": "Creativity_Base_CloseUp_Return_v3",
+      "keyframes": [
+        {
+          "frame": 1,
+          "camera": "Portfolio_Creativity_CloseUp_Camera",
+          "position": {
+            "x": 6.838463,
+            "y": -1.267436,
+            "z": 2.91449
+          },
+          "rotationEuler": {
+            "x": 1.078306,
+            "y": 0.0,
+            "z": 0.222292
+          },
+          "quaternion": {
+            "x": 0.510241,
+            "y": 0.056946,
+            "z": 0.095183,
+            "w": 0.852849
+          },
+          "target": {
+            "x": 5.893476,
+            "y": 2.913413,
+            "z": 0.61449
+          },
+          "targetName": "TARGET_Creativity",
+          "focalLength": 52.0,
+          "fov": 38.186984,
+          "blenderEvaluatedRotationEuler": {
+            "x": 1.078306,
+            "y": -0.0,
+            "z": 0.222292
+          }
+        },
+        {
+          "frame": 8,
+          "camera": "Portfolio_Creativity_CloseUp_Camera",
+          "position": {
+            "x": 6.824378,
+            "y": -1.182926,
+            "z": 2.874069
+          },
+          "rotationEuler": {
+            "x": 1.077294,
+            "y": -0.0,
+            "z": 0.223457
+          },
+          "quaternion": {
+            "x": 0.509777,
+            "y": 0.057195,
+            "z": 0.095709,
+            "w": 0.853051
+          },
+          "target": {
+            "x": 5.893476,
+            "y": 2.913413,
+            "z": 0.61449
+          },
+          "targetName": "TARGET_Creativity",
+          "focalLength": 52.0,
+          "fov": 38.186984,
+          "blenderEvaluatedRotationEuler": {
+            "x": 1.074628,
+            "y": -0.000491,
+            "z": 0.258453
+          }
+        },
+        {
+          "frame": 14,
+          "camera": "Portfolio_Creativity_CloseUp_Camera",
+          "position": {
+            "x": 6.775078,
+            "y": -0.887139,
+            "z": 2.732599
+          },
+          "rotationEuler": {
+            "x": 1.075415,
+            "y": -0.0,
+            "z": 0.370163
+          },
+          "quaternion": {
+            "x": 0.503421,
+            "y": 0.094252,
+            "z": 0.158058,
+            "w": 0.844217
+          },
+          "target": {
+            "x": 5.31688,
+            "y": 2.870616,
+            "z": 0.554693
+          },
+          "targetName": "TARGET_Creativity_Screen",
+          "focalLength": 51.799999,
+          "fov": 38.323692,
+          "blenderEvaluatedRotationEuler": {
+            "x": 1.069084,
+            "y": -0.000976,
+            "z": 0.312698
+          }
+        },
+        {
+          "frame": 25,
+          "camera": "Portfolio_Creativity_CloseUp_Camera",
+          "position": {
+            "x": 6.563796,
+            "y": 0.380518,
+            "z": 2.126298
+          },
+          "rotationEuler": {
+            "x": 1.05701,
+            "y": -0.0,
+            "z": 0.464247
+          },
+          "quaternion": {
+            "x": 0.490719,
+            "y": 0.115998,
+            "z": 0.198658,
+            "w": 0.840401
+          },
+          "target": {
+            "x": 5.31688,
+            "y": 2.870616,
+            "z": 0.554693
+          },
+          "targetName": "TARGET_Creativity_Screen",
+          "focalLength": 50.439999,
+          "fov": 39.278863,
+          "blenderEvaluatedRotationEuler": {
+            "x": 1.0521,
+            "y": -0.000592,
+            "z": 0.47845
+          }
+        },
+        {
+          "frame": 36,
+          "camera": "Portfolio_Creativity_CloseUp_Camera",
+          "position": {
+            "x": 6.291895,
+            "y": 1.182006,
+            "z": 1.67957
+          },
+          "rotationEuler": {
+            "x": 1.04754,
+            "y": -0.0,
+            "z": 0.523641
+          },
+          "quaternion": {
+            "x": 0.483104,
+            "y": 0.129458,
+            "z": 0.224139,
+            "w": 0.836429
+          },
+          "target": {
+            "x": 5.31688,
+            "y": 2.870616,
+            "z": 0.554693
+          },
+          "targetName": "TARGET_Creativity_Screen",
+          "focalLength": 50.0,
+          "fov": 39.597753,
+          "blenderEvaluatedRotationEuler": {
+            "x": 1.131275,
+            "y": -0.0,
+            "z": 0.502708
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreativityCloseup_to_CreativityBase",
+      "from": "creativityCloseup",
+      "to": "creativityBase",
+      "camera": "Portfolio_Creativity_CloseUp_Camera",
+      "action": "Creativity_Base_CloseUp_Return_v3",
+      "keyframes": [
+        {
+          "frame": 36,
+          "camera": "Portfolio_Creativity_CloseUp_Camera",
+          "position": {
+            "x": 6.291895,
+            "y": 1.182006,
+            "z": 1.67957
+          },
+          "rotationEuler": {
+            "x": 1.04754,
+            "y": -0.0,
+            "z": 0.523641
+          },
+          "quaternion": {
+            "x": 0.483104,
+            "y": 0.129458,
+            "z": 0.224139,
+            "w": 0.836429
+          },
+          "target": {
+            "x": 5.31688,
+            "y": 2.870616,
+            "z": 0.554693
+          },
+          "targetName": "TARGET_Creativity_Screen",
+          "focalLength": 50.0,
+          "fov": 39.597753,
+          "blenderEvaluatedRotationEuler": {
+            "x": 1.131275,
+            "y": -0.0,
+            "z": 0.502708
+          }
+        },
+        {
+          "frame": 47,
+          "camera": "Portfolio_Creativity_CloseUp_Camera",
+          "position": {
+            "x": 6.54971,
+            "y": 0.465028,
+            "z": 2.085878
+          },
+          "rotationEuler": {
+            "x": 1.055407,
+            "y": 0.0,
+            "z": 0.473586
+          },
+          "quaternion": {
+            "x": 0.489499,
+            "y": 0.118126,
+            "z": 0.202675,
+            "w": 0.839857
+          },
+          "target": {
+            "x": 5.31688,
+            "y": 2.870616,
+            "z": 0.554693
+          },
+          "targetName": "TARGET_Creativity_Screen",
+          "focalLength": 50.200001,
+          "fov": 39.452188,
+          "blenderEvaluatedRotationEuler": {
+            "x": 1.054255,
+            "y": -0.000798,
+            "z": 0.457355
+          }
+        },
+        {
+          "frame": 56,
+          "camera": "Portfolio_Creativity_CloseUp_Camera",
+          "position": {
+            "x": 6.704651,
+            "y": -0.464587,
+            "z": 2.530499
+          },
+          "rotationEuler": {
+            "x": 1.066784,
+            "y": -0.0,
+            "z": 0.235672
+          },
+          "quaternion": {
+            "x": 0.504931,
+            "y": 0.059776,
+            "z": 0.101233,
+            "w": 0.855116
+          },
+          "target": {
+            "x": 5.893476,
+            "y": 2.913413,
+            "z": 0.61449
+          },
+          "targetName": "TARGET_Creativity",
+          "focalLength": 51.299999,
+          "fov": 38.669618,
+          "blenderEvaluatedRotationEuler": {
+            "x": 1.069084,
+            "y": -0.000976,
+            "z": 0.312698
+          }
+        },
+        {
+          "frame": 68,
+          "camera": "Portfolio_Creativity_CloseUp_Camera",
+          "position": {
+            "x": 6.838463,
+            "y": -1.267436,
+            "z": 2.91449
+          },
+          "rotationEuler": {
+            "x": 1.078306,
+            "y": 0.0,
+            "z": 0.222292
+          },
+          "quaternion": {
+            "x": 0.510241,
+            "y": 0.056946,
+            "z": 0.095183,
+            "w": 0.852849
+          },
+          "target": {
+            "x": 5.893476,
+            "y": 2.913413,
+            "z": 0.61449
+          },
+          "targetName": "TARGET_Creativity",
+          "focalLength": 52.0,
+          "fov": 38.186984,
+          "blenderEvaluatedRotationEuler": {
+            "x": 1.078306,
+            "y": -0.0,
+            "z": 0.222292
+          }
+        }
+      ]
+    }
+  ]
+}
