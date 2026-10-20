@@ -142,7 +142,7 @@ export const portfolioContent = {
       screenImage: "/content-media/projects/covers/flightor-cover.png",
       screenAccent: "#5477d9",
       detailPath: "/content-media/projects/details/flightor.md",
-      media: [{ type: "video", title: "FlightOR 产品演示 · 无配音", src: "/content-media/projects/videos/flightor-demo-1080p.mp4" }],
+      media: [{ type: "video", title: "FlightOR 产品演示 · 无配音", src: "/content-media/projects/videos/flightor-demo-1080p.mp4", autoplay: true, loop: true }],
     },
     {
       slug: "memorial-archive",
