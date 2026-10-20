@@ -343,7 +343,12 @@ export class PortfolioUi {
   }
 
   private renderExperienceTimeline(): string {
-    return `<div class="timeline-heading"><span class="timeline-rule"></span><span>EXPERIENCE / SELECTED WORK</span></div><ol>${portfolioContent.personalIntro.experienceTimeline.map((entry) => `<li class="experience-item"><time>${escapeHtml(entry.period)}</time><div><strong>${escapeHtml(entry.title)}</strong><p>${escapeHtml(entry.detail)}</p></div></li>`).join("")}</ol>`;
+    return `<div class="timeline-heading"><span class="timeline-rule"></span><span>EXPERIENCE / SELECTED WORK</span></div><ol>${portfolioContent.personalIntro.experienceTimeline.map((entry) => {
+      const title = entry.url
+        ? `<a class="experience-item-link" href="${escapeHtml(entry.url)}" target="_blank" rel="noreferrer">${escapeHtml(entry.title)} <span>↗</span></a>`
+        : `<strong>${escapeHtml(entry.title)}</strong>`;
+      return `<li class="experience-item"><time>${escapeHtml(entry.period)}</time><div>${title}<p>${escapeHtml(entry.detail)}</p></div></li>`;
+    }).join("")}</ol>`;
   }
 
   private renderCreativityShowcase(): string {

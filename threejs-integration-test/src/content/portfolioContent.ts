@@ -42,6 +42,13 @@ export interface InterestCertificate {
   image: string;
 }
 
+export interface PortfolioExperienceTimelineEntry {
+  period: string;
+  title: string;
+  detail: string;
+  url?: string;
+}
+
 /** Curated from the existing root portfolio/content/index.json and entry Markdown. */
 export const portfolioContent = {
   meta: {
@@ -69,8 +76,15 @@ export const portfolioContent = {
       { period: "2025.11–12", title: "北航七海游戏社 Game Jam", detail: "制作《SaveLara》· 负责策划、程序" },
       { period: "2026.1–2", title: "第三届萌芽 Game Jam", detail: "以主策划、主程序身份带领 6 人小队制作《厨房交响曲：乱炖大危机！》" },
       { period: "2026.3–7", title: "北航 VR 国重实验室", detail: "制作数字孪生无人机控制平台· 以主程序身份参与· 正在申请软著" },
-      { period: "2026.7–至今", title: "腾讯游戏创作大赛 2026 · TENCENT GAME AWARDS 2026", detail: "制作《追忆档案馆》· 以主程序身份参与" },
-    ],
+      { period: "2026.7–9", title: "腾讯游戏创作大赛 2026 · TENCENT GAME AWARDS 2026", detail: "制作《追忆档案馆》· 以主程序身份参与" },
+      {
+        period: "2026.9–11",
+        title: "“未来旅行家”全球挑战赛 · AI Travel 2030",
+        detail: "参与报名与初赛 · 已晋级复赛，最终结果待公布",
+        url: "https://mp.weixin.qq.com/s/dUV6VPeuCvkEzfBQu-mxOA",
+      },
+      { period: "2026.10", title: "TapTap 聚光灯 Game Jam", detail: "参与 Game Jam" },
+    ] satisfies PortfolioExperienceTimelineEntry[],
   },
   techStack: {
     kicker: "TECH STACK / 02",
@@ -116,13 +130,28 @@ export const portfolioContent = {
   },
   projects: [
     {
+      slug: "flightor",
+      title: "FlightOR",
+      type: "国际航线与多城行程规划工具",
+      status: "MVP 演示",
+      date: "2026",
+      format: "微信小程序 / Agent / 前后端",
+      summary: "先比较航班，再安排怎么玩。FlightOR 把出发地、日期、预算和偏好整理成可确认的多城路线，选中航班后再继续规划沿途行程。",
+      tags: ["产品设计", "Agent", "微信小程序", "路线规划"],
+      cover: "/content-media/projects/covers/flightor-cover.png",
+      screenImage: "/content-media/projects/covers/flightor-cover.png",
+      screenAccent: "#5477d9",
+      detailPath: "/content-media/projects/details/flightor.md",
+      media: [{ type: "video", title: "FlightOR 产品演示 · 无配音", src: "/content-media/projects/videos/flightor-demo-1080p.mp4" }],
+    },
+    {
       slug: "memorial-archive",
       title: "追忆档案馆",
       type: "中等体量独立游戏",
       status: "开发中",
       date: "2026",
       format: "Unity / C# / 游戏工程",
-      summary: "一款正在开发中的独立游戏：以 Framework / Gameplay 分层、事件通信和数据配置支撑探索、战斗、解谜与剧情系统。",
+      summary: "玩家在档案馆的不同房间之间探索，捡起并整理物品、解开机关、躲避怪物，再从日记和纸条里拼出完整的故事。我负责主程序，也在持续整理多人协作时的工程边界。",
       tags: ["主程序", "游戏架构", "Unity", "C#"],
       cover: "/content-media/projects/covers/memorial-archive-cover.webp",
       screenImage: "/content-media/projects/covers/memorial-archive-cover.webp",
@@ -136,7 +165,7 @@ export const portfolioContent = {
       status: "外场验证",
       date: "2026",
       format: "UE5 / 三端协同 / 软件工程",
-      summary: "连接 UE5 客户端、C++ 后端、Jetson 与 PX4 的虚实联动系统，完成从仿真控制到真实无人机执行的 OODA 闭环。",
+      summary: "把 UE5 场景、C++ 后端、Jetson 桥接和 PX4 飞控连成一条链路，让虚拟场景里的任务能够下发到真机，也把真机状态带回场景里。我以主程序身份负责分工、整合和外场联调。",
       tags: ["数字孪生", "无人机", "UE5", "软件工程"],
       screenAccent: "#67d5c5",
       detailPath: "/content-media/projects/details/ue5-drone-control.md",
@@ -150,7 +179,7 @@ export const portfolioContent = {
       status: "已发布",
       date: "2024",
       format: "叙事 / 模拟经营",
-      summary: "一间看起来平常的奶茶店，藏着关于人类与奶茶生物共生的恐怖故事。",
+      summary: "白天做奶茶，晚上逐渐发现店里的规则不太对劲。这是一款把经营、文字解谜和规则怪谈放在一起的 Unity 单机 Demo。",
       tags: ["叙事", "模拟经营", "恐怖"],
       cover: "/content-media/projects/covers/bursting-milk-tea-shop-cover.webp",
       screenImage: "/content-media/projects/covers/bursting-milk-tea-shop-cover.webp",
@@ -166,7 +195,7 @@ export const portfolioContent = {
       status: "课程项目集",
       date: "2026",
       format: "Unity / VR 交互 / PICO 4",
-      summary: "五个 Unity VR 课程原型，覆盖眼动、手势、姿态捕捉与空间交互，并完成 PICO 4 真机运行与调试。",
+      summary: "五个 Unity VR 课程原型，分别尝试眼动、手势、姿态捕捉和空间交互。所有作业都完成了 PICO 4 真机运行与调试。",
       tags: ["VR", "Unity", "PICO 4", "人机交互"],
       cover: "/content-media/projects/covers/vr-interaction-coursework-cover.svg",
       screenImage: "/content-media/projects/covers/vr-interaction-coursework-cover.svg",
@@ -181,7 +210,7 @@ export const portfolioContent = {
       status: "已发布",
       date: "2026",
       format: "动作 / 节拍弹幕",
-      summary: "在被紊乱波影响的厨房里，观察节拍、躲避弹幕并击败失控的厨具 Boss。",
+      summary: "厨房里的餐具突然有了意识。玩家要跟着音乐节拍穿过弹幕，找到 Boss 的攻击空档，把失控的厨具逐个打回去。三周 Game Jam 完成了可玩切片。",
       tags: ["单人", "弹幕", "节拍", "Game Jam"],
       cover: "/content-media/projects/covers/kitchen-symphony-cover.webp",
       screenImage: "/content-media/projects/covers/kitchen-symphony-cover.webp",
@@ -199,7 +228,7 @@ export const portfolioContent = {
       status: "原型阶段",
       date: "2024",
       format: "策略 / 时间机制",
-      summary: "护送装有主人 Lara 的箱子穿过机器人的追捕，用一次次重启改变战局。",
+      summary: "一边推箱子，一边躲开机器人的巡逻和追击。玩家能在原地重启局面，重置敌人的状态和部分机关，换一条路把 Lara 送到终点。",
       tags: ["推箱子", "策略", "时间机制"],
       cover: "/content-media/projects/covers/save-lara-cover.webp",
       screenImage: "/content-media/projects/covers/save-lara-cover.webp",
@@ -245,9 +274,9 @@ export function getModuleContent(state: PortfolioState) {
     kicker: "SELECTED PROJECTS / 03",
     title: "Projects",
     subtitle: "Made to be experienced.",
-    body: "六个项目，从独立游戏、数字孪生到 VR 交互，记录我如何把系统、玩法与叙事变成可被体验的作品。",
+    body: "七个项目，从航线规划、独立游戏和数字孪生到 VR 交互。每个项目都保留了可运行的部分，也记录了我怎么处理系统、玩法和叙事。",
     detail: "选择项目，工作站屏幕同步切换封面；本地演示视频按需加载。",
-    tags: ["6 SELECTED WORKS"],
+    tags: ["7 SELECTED WORKS"],
   };
   if (state === "creativityBase") return portfolioContent.creativity;
   return portfolioContent.interests;

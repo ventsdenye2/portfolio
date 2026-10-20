@@ -137,7 +137,9 @@ a { color: inherit; text-decoration: none; }
 .experience-timeline ol { display: grid; gap: 0.05rem; margin: 0; padding: 0; list-style: none; }
 .experience-item { display: grid; grid-template-columns: 5.9rem 1fr; gap: 0.85rem; padding: 0.78rem 0.2rem 0.84rem 0; border-top: 1px solid rgba(232, 244, 248, 0.12); animation: timeline-reveal 520ms cubic-bezier(.2,.8,.2,1) both; }
 .experience-item time { color: var(--coral); font: 0.58rem "DM Mono", ui-monospace, monospace; letter-spacing: 0.02em; }
-.experience-item strong { display: block; color: #e7eef0; font-size: 0.76rem; font-weight: 600; line-height: 1.4; }
+.experience-item strong, .experience-item-link { display: block; color: #e7eef0; font-size: 0.76rem; font-weight: 600; line-height: 1.4; }
+.experience-item-link { text-decoration: underline; text-decoration-color: rgba(240, 161, 111, 0.48); text-underline-offset: 0.16em; transition: color 180ms ease, text-decoration-color 180ms ease; }
+.experience-item-link:hover, .experience-item-link:focus-visible { color: #ffd1b0; text-decoration-color: var(--coral); outline: none; }
 .experience-item p { margin: 0.25rem 0 0; color: rgba(216, 224, 227, 0.64); font-size: 0.69rem; line-height: 1.55; }
 .experience-item:nth-child(2) { animation-delay: 55ms; }.experience-item:nth-child(3) { animation-delay: 110ms; }.experience-item:nth-child(4) { animation-delay: 165ms; }.experience-item:nth-child(5) { animation-delay: 220ms; }.experience-item:nth-child(6) { animation-delay: 275ms; }.experience-item:nth-child(7) { animation-delay: 330ms; }
 .interests-certificates { margin-top: 1.45rem; }
