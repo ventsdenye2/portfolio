@@ -1,4 +1,5 @@
 import type { DetailState, MainState } from "../camera/cameraTypes";
+import { techToolIcons } from "../content/techToolIcons";
 import {
   getModuleContent,
   portfolioContent,
@@ -356,7 +357,15 @@ export class PortfolioUi {
   }
 
   private renderTechStack(): string {
-    return portfolioContent.techStack.groups.map((group) => `<article class="tech-stack-card"><p class="tech-stack-label">${escapeHtml(group.label)}</p><div class="tech-stack-items">${group.items.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div></article>`).join("");
+    return portfolioContent.techStack.groups.map((group) => {
+      const isToolGroup = group.items.every((item) => Boolean(techToolIcons[item]));
+      const items = group.items.map((item) => {
+        const icon = techToolIcons[item];
+        if (!icon) return `<span>${escapeHtml(item)}</span>`;
+        return `<div class="tech-tool"><img class="tech-tool-icon${icon.monochrome ? " tech-tool-icon--monochrome" : ""}" src="${escapeHtml(icon.src)}" alt="" aria-hidden="true" width="32" height="32" decoding="async"><span class="tech-tool-name">${escapeHtml(item)}</span></div>`;
+      }).join("");
+      return `<article class="tech-stack-card"><p class="tech-stack-label">${escapeHtml(group.label)}</p><div class="tech-stack-items${isToolGroup ? " tech-stack-tools" : ""}">${items}</div></article>`;
+    }).join("");
   }
 
   private renderInterestCertificates(): string {
