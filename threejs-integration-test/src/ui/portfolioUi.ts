@@ -474,7 +474,7 @@ export class PortfolioUi {
     if (project.slug === "bursting-milk-tea-shop" && normalized === "image.png") return "/content-media/projects/details/bursting-milk-tea-shop-image.webp";
     if (project.slug === "kitchen-symphony" && normalized.includes("images/pic05.png")) return "/content-media/projects/covers/kitchen-symphony-cover.webp";
     if (project.slug === "save-lara" && normalized.includes("images/pic03.png")) return "/content-media/projects/covers/save-lara-cover.webp";
-    return normalized;
+    return new URL(normalized, new URL(project.detailPath, window.location.href)).href;
   }
 
   private startIntroManifesto(): void {
